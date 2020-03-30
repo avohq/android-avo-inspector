@@ -1,0 +1,2 @@
+include ':avoinspectoexample', ':avoinspector'
+rootProject.name='AvoInspector'
