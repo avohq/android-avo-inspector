@@ -1,11 +1,11 @@
 package app.avo.inspector;
 
-import android.content.Context;
+import android.app.Application;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -20,22 +20,25 @@ public class InitializationTests {
     AvoInspector sut;
 
     @Mock
-    Context mockContext;
+    Application mockApplication;
     @Mock
     PackageManager mockPackageManager;
     @Mock
     PackageInfo mockPackageInfo;
     @Mock
     ApplicationInfo mockApplicationInfo;
+    @Mock
+    SharedPreferences mockSharedPrefs;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        when(mockContext.getPackageManager()).thenReturn(mockPackageManager);
-        when(mockContext.getPackageName()).thenReturn("");
+        when(mockApplication.getPackageManager()).thenReturn(mockPackageManager);
+        when(mockApplication.getPackageName()).thenReturn("");
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
-        when(mockContext.getApplicationInfo()).thenReturn(mockApplicationInfo);
+        when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
+        when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
     }
 
     @Test
@@ -43,7 +46,7 @@ public class InitializationTests {
         mockPackageInfo.versionCode = 10;
         mockApplicationInfo.packageName = "testPckg";
 
-        sut = new AvoInspector("apiKey", mockContext, AvoInspectorEnv.Dev);
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
         assertEquals(10L, (long)sut.appVersion);
         assertEquals("apiKey", sut.apiKey);
@@ -53,21 +56,21 @@ public class InitializationTests {
 
     @Test
     public void initsWithProdEnv() {
-        sut = new AvoInspector("apiKey", mockContext, AvoInspectorEnv.Prod);
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Prod);
 
         assertEquals("prod", sut.env);
     }
 
     @Test
     public void initsWithDevEnv() {
-        sut = new AvoInspector("apiKey", mockContext, AvoInspectorEnv.Dev);
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
         assertEquals("dev", sut.env);
     }
 
     @Test
     public void initsWithStagingEnv() {
-        sut = new AvoInspector("apiKey", mockContext, AvoInspectorEnv.Staging);
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Staging);
 
         assertEquals("staging", sut.env);
     }

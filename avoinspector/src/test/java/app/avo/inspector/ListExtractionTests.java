@@ -1,13 +1,20 @@
 package app.avo.inspector;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,14 +22,36 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 public class ListExtractionTests {
 
     AvoInspector sut;
 
+    @Mock
+    Application mockApplication;
+    @Mock
+    PackageManager mockPackageManager;
+    @Mock
+    PackageInfo mockPackageInfo;
+    @Mock
+    ApplicationInfo mockApplicationInfo;
+    @Mock
+    SharedPreferences mockSharedPrefs;
+
     @Before
-    public void setUp() {
-        sut = new AvoInspector("api key", Mockito.mock(Context.class), AvoInspectorEnv.Dev);
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+
+        when(mockApplication.getPackageManager()).thenReturn(mockPackageManager);
+        when(mockApplication.getPackageName()).thenReturn("");
+        when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
+        when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
+        when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
+
+        sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
     }
 
     @Test

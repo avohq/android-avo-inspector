@@ -1,8 +1,11 @@
 package app.avo.inspector;
 
-import android.content.Context;
+import android.app.Activity;
+import android.app.Application;
+import android.content.ComponentCallbacks2;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.util.Log;
 
@@ -32,23 +35,57 @@ public class AvoInspector implements Inspector {
     boolean logsEnabled = false;
     String env;
 
-    public AvoInspector(String apiKey, Context context, AvoInspectorEnv env) {
+    AvoInspectorSessionTracker sessionTracker;
+    AvoInspectorBatcher avoBatcher;
+
+    boolean isHidden = true;
+
+    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env) {
         try {
-            PackageManager packageManager = context.getPackageManager();
-            PackageInfo pInfo = packageManager.getPackageInfo(context.getPackageName(), 0);
+            PackageManager packageManager = application.getPackageManager();
+            PackageInfo pInfo = packageManager.getPackageInfo(application.getPackageName(), 0);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 appVersion = pInfo.getLongVersionCode();
             } else {
                 appVersion = (long) pInfo.versionCode;
             }
+        } catch (PackageManager.NameNotFoundException ignored) {}
 
-            int stringId = context.getApplicationInfo().labelRes;
-            appName = stringId == 0 ? context.getApplicationInfo().packageName : context.getString(stringId);
-        } catch (PackageManager.NameNotFoundException ignored) {
+        int stringId = application.getApplicationInfo().labelRes;
+        appName = stringId == 0 ? application.getApplicationInfo().packageName : application.getString(stringId);
 
-        }
         this.env = env.getName();
         this.apiKey = apiKey;
+
+        avoBatcher = new AvoInspectorBatcher(application);
+        sessionTracker = new AvoInspectorSessionTracker(application, avoBatcher);
+
+        application.registerActivityLifecycleCallbacks(new EmptyActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityStarted(@NonNull Activity activity) {
+                if (isHidden) {
+                    isHidden = false;
+                    avoBatcher.enterForeground();
+                    sessionTracker.startOrProlongSession(System.currentTimeMillis());
+                }
+            }
+        });
+
+        application.registerComponentCallbacks(new ComponentCallbacks2() {
+            @Override
+            public void onTrimMemory(int i) {
+                if (i == TRIM_MEMORY_UI_HIDDEN) {
+                    isHidden = true;
+                    avoBatcher.enterBackground();
+                }
+            }
+
+            @Override
+            public void onConfigurationChanged(@NonNull Configuration configuration) {}
+
+            @Override
+            public void onLowMemory() {}
+        });
     }
 
     @Override
@@ -83,6 +120,10 @@ public class AvoInspector implements Inspector {
         if (logsEnabled) {
             Log.d(getClass().getSimpleName(), "Avo State Of Tracking schema tracked");
         }
+
+        sessionTracker.startOrProlongSession(System.currentTimeMillis());
+
+        avoBatcher.batchTrackEventSchema(eventName, eventSchema);
     }
 
     @Override
@@ -140,7 +181,7 @@ public class AvoInspector implements Inspector {
     }
 
     private AvoEventSchemaType objectToAvoType(@Nullable Object val) {
-        if (val == null || val instanceof AvoEventSchemaType.Null) {
+        if (val == null || val instanceof AvoEventSchemaType.Null || val == JSONObject.NULL) {
             return new AvoEventSchemaType.Null();
         } else {
             String valTypeName = val.getClass().getName();

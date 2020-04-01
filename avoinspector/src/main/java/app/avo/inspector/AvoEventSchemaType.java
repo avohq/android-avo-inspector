@@ -33,7 +33,7 @@ public abstract class AvoEventSchemaType {
     static class Int extends AvoEventSchemaType {
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "int";
         }
     }
@@ -41,7 +41,7 @@ public abstract class AvoEventSchemaType {
     static class Float extends AvoEventSchemaType {
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "float";
         }
     }
@@ -49,7 +49,7 @@ public abstract class AvoEventSchemaType {
     static class Boolean extends AvoEventSchemaType {
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "boolean";
         }
     }
@@ -57,7 +57,7 @@ public abstract class AvoEventSchemaType {
     static class String extends AvoEventSchemaType {
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "string";
         }
     }
@@ -65,7 +65,7 @@ public abstract class AvoEventSchemaType {
     static class Null extends AvoEventSchemaType {
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "null";
         }
     }
@@ -73,13 +73,13 @@ public abstract class AvoEventSchemaType {
     static class List extends AvoEventSchemaType {
         @NonNull Set<AvoEventSchemaType> subtypes;
 
-        public List(@NonNull Set<AvoEventSchemaType> subtypes) {
+        List(@NonNull Set<AvoEventSchemaType> subtypes) {
             this.subtypes = subtypes;
         }
 
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             StringBuilder types = new StringBuilder();
 
             boolean first = true;
@@ -100,7 +100,7 @@ public abstract class AvoEventSchemaType {
 
         @NonNull Map<java.lang.String, AvoEventSchemaType> children;
 
-        public AvoObject(@NonNull Map<java.lang.String, AvoEventSchemaType> children) {
+        AvoObject(@NonNull Map<java.lang.String, AvoEventSchemaType> children) {
             this.children = children;
         }
 
@@ -139,7 +139,7 @@ public abstract class AvoEventSchemaType {
 
         @NonNull
         @Override
-        public java.lang.String getName() {
+        java.lang.String getName() {
             return "unknown";
         }
     }

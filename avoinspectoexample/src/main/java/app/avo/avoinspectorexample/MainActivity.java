@@ -3,6 +3,7 @@ package app.avo.avoinspectorexample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,22 +11,26 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import app.avo.avoinspectorexample.databinding.ActivityMainBinding;
 import app.avo.inspector.AvoEventSchemaType;
 import app.avo.inspector.AvoInspector;
 import app.avo.inspector.AvoInspectorEnv;
 
 public class MainActivity extends AppCompatActivity {
 
+    ActivityMainBinding binding;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        AvoInspector avoInspector = new AvoInspector();
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        View view = binding.getRoot();
+        setContentView(view);
+
+        final AvoInspector avoInspector = new AvoInspector("apiKey", getApplication(), AvoInspectorEnv.Dev);
 
         avoInspector.enableLogging(true);
-
-        avoInspector.init("apiKey", getApplicationContext(), AvoInspectorEnv.Dev);
 
         Map testMap = new HashMap();
         testMap.put("asdfa", true);
@@ -49,6 +54,19 @@ public class MainActivity extends AppCompatActivity {
 
         Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(testMap);
 
-        int i = 0;
+        binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String eventName = binding.eventNameInput.getText().toString();
+
+                String paramName = binding.paramNameInput.getText().toString();
+                String paramValue = binding.paramValueInput.getText().toString();
+
+                Map<String, String> params = new HashMap<>();
+                params.put(paramName, paramValue);
+
+                avoInspector.trackSchemaFromEvent(eventName, params);
+            }
+        });
     }
 }
