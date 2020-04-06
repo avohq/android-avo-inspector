@@ -39,6 +39,7 @@ public class InitializationTests {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
+        when(mockSharedPrefs.getString(eq(AvoInstallationId.cacheKey), anyString())).thenReturn("testInstallationId");
     }
 
     @Test
@@ -52,6 +53,12 @@ public class InitializationTests {
         assertEquals("apiKey", sut.apiKey);
         assertEquals("testPckg", sut.appName);
         assertEquals(1, sut.libVersion);
+
+        assertEquals("10", sut.avoBatcher.networkCallsHandler.appVersion);
+        assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
+        assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
+        assertEquals("1", sut.avoBatcher.networkCallsHandler.libVersion);
+        assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
     }
 
     @Test
@@ -59,6 +66,7 @@ public class InitializationTests {
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Prod);
 
         assertEquals("prod", sut.env);
+        assertEquals("prod", sut.avoBatcher.networkCallsHandler.envName);
     }
 
     @Test
@@ -66,6 +74,7 @@ public class InitializationTests {
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
         assertEquals("dev", sut.env);
+        assertEquals("dev", sut.avoBatcher.networkCallsHandler.envName);
     }
 
     @Test
@@ -73,5 +82,6 @@ public class InitializationTests {
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Staging);
 
         assertEquals("staging", sut.env);
+        assertEquals("staging", sut.avoBatcher.networkCallsHandler.envName);
     }
 }

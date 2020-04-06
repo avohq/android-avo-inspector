@@ -5,17 +5,17 @@ import android.content.SharedPreferences;
 
 import java.util.concurrent.TimeUnit;
 
-class AvoInspectorSessionTracker {
+class AvoSessionTracker {
 
     long lastSessionTimestamp;
-    long sessionLength = TimeUnit.MINUTES.toMillis(5);
+    long sessionMillis = TimeUnit.MINUTES.toMillis(5);
 
     static final String sessionStartKey = "avo_inspector_session_start_key";
 
     private SharedPreferences sharedPreferences;
-    private AvoInspectorBatcher avoBatcher;
+    private AvoBatcher avoBatcher;
 
-    AvoInspectorSessionTracker(Context context, AvoInspectorBatcher avoBatcher) {
+    AvoSessionTracker(Context context, AvoBatcher avoBatcher) {
         this.sharedPreferences = context.getSharedPreferences(Util.AVO_SHARED_PREFS_KEY, Context.MODE_PRIVATE);
         this.lastSessionTimestamp = this.sharedPreferences.getLong(sessionStartKey, -1L);
         this.avoBatcher = avoBatcher;
@@ -23,7 +23,7 @@ class AvoInspectorSessionTracker {
 
     void startOrProlongSession(long triggeredTimeMillis) {
         long timeSinceLastSession = triggeredTimeMillis -  lastSessionTimestamp;
-        if (timeSinceLastSession > sessionLength) {
+        if (timeSinceLastSession > sessionMillis) {
             avoBatcher.batchSessionStarted();
         }
 

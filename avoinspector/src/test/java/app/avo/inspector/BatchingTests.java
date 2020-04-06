@@ -48,9 +48,9 @@ public class BatchingTests {
     @Mock
     SharedPreferences mockSharedPrefs;
     @Mock
-    AvoInspectorNetworkCallsHandler mockNetworkCallsHandler;
+    AvoNetworkCallsHandler mockNetworkCallsHandler;
     @Mock
-    AvoInspectorBatcher mockBatcher;
+    AvoBatcher mockBatcher;
     @Mock
     SharedPreferences.Editor mockEditor;
 
@@ -112,13 +112,12 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
-        ArgumentCaptor<AvoInspectorNetworkCallsHandler.Callback> networkCallbackCaptor
-                = ArgumentCaptor.forClass(AvoInspectorNetworkCallsHandler.Callback.class);
+        ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
+                = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
         ArgumentCaptor<List<Map<String, String>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
 
@@ -134,10 +133,10 @@ public class BatchingTests {
 
         Thread.sleep(500);
 
-        verify(mockEditor).putString(eq(AvoInspectorBatcher.avoInspectorBatchKey), stringCaptor.capture());
+        verify(mockEditor).putString(eq(AvoBatcher.avoInspectorBatchKey), stringCaptor.capture());
 
         // Given
-        when(mockSharedPrefs.getString(AvoInspectorBatcher.avoInspectorBatchKey, null))
+        when(mockSharedPrefs.getString(AvoBatcher.avoInspectorBatchKey, null))
                 .thenReturn(stringCaptor.getValue());
 
         // When
@@ -169,18 +168,17 @@ public class BatchingTests {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
 
-        for (int i = 0; i < AvoInspectorBatcher.batchSize; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize; i++) {
             Map<String, String> event = new HashMap<>();
             event.put("no-type", "test");
             sut.events.add(event);
         }
 
-        when(mockSharedPrefs.getString(AvoInspectorBatcher.avoInspectorBatchKey, null))
+        when(mockSharedPrefs.getString(AvoBatcher.avoInspectorBatchKey, null))
                 .thenReturn(new JSONArray(sut.events).toString());
 
         // When
@@ -195,7 +193,7 @@ public class BatchingTests {
 
         // Then
         verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, String>>anyList(),
-                any(AvoInspectorNetworkCallsHandler.Callback.class));
+                any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
 
         verify(mockEditor).remove(anyString());
@@ -206,17 +204,16 @@ public class BatchingTests {
     public void restoresEventsOnFailedNetworkPost() throws InterruptedException {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
-        ArgumentCaptor<AvoInspectorNetworkCallsHandler.Callback> networkCallbackCaptor
-                = ArgumentCaptor.forClass(AvoInspectorNetworkCallsHandler.Callback.class);
+        ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
+                = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
         ArgumentCaptor<List<Map<String, String>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
 
-        for (int i = 0; i < AvoInspectorBatcher.batchSize; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize; i++) {
             Map<String, String> event = new HashMap<>();
             event.put("type", "test");
             sut.events.add(event);
@@ -240,25 +237,24 @@ public class BatchingTests {
         // When
         networkCallbackCaptor.getValue().call("Failed");
 
-        assertEquals(AvoInspectorBatcher.batchSize, sut.events.size());
+        assertEquals(AvoBatcher.batchSize, sut.events.size());
     }
 
     @Test
     public void clearsEventsOnSuccessNetworkPost() throws InterruptedException {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
-        ArgumentCaptor<AvoInspectorNetworkCallsHandler.Callback> networkCallbackCaptor
-                = ArgumentCaptor.forClass(AvoInspectorNetworkCallsHandler.Callback.class);
+        ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
+                = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
         ArgumentCaptor<List<Map<String, String>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
         sut.batchFlushAttemptMillis = 0;
 
-        for (int i = 0; i < AvoInspectorBatcher.batchSize; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize; i++) {
             Map<String, String> event = new HashMap<>();
             event.put("type", "test");
             sut.events.add(event);
@@ -291,13 +287,12 @@ public class BatchingTests {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
         sut.batchFlushAttemptMillis = 0;
 
-        for (int i = 0; i < AvoInspectorBatcher.batchSize; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize; i++) {
             Map<String, String> event = new HashMap<>();
             event.put("no-type", "test");
             sut.events.add(event);
@@ -313,7 +308,7 @@ public class BatchingTests {
 
         // Then
         verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, String>>anyList(),
-                any(AvoInspectorNetworkCallsHandler.Callback.class));
+                any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
         assertEquals(0, sut.batchFlushAttemptMillis);
     }
@@ -323,13 +318,12 @@ public class BatchingTests {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
 
         //When
-        for (int i = 0; i < AvoInspectorBatcher.batchSize; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize; i++) {
             sut.batchSessionStarted();
         }
 
@@ -344,7 +338,7 @@ public class BatchingTests {
         verify(sut.mainHandler).post(any(Runnable.class));
 
         // When
-        for (int i = 0; i < AvoInspectorBatcher.batchSize - 1; i++) {
+        for (int i = 0; i < AvoBatcher.batchSize - 1; i++) {
             sut.batchTrackEventSchema("Test Event",
                     new HashMap<String, AvoEventSchemaType>());
         }
@@ -358,8 +352,7 @@ public class BatchingTests {
         ArgumentCaptor<Runnable> runnableCaptor
                 = ArgumentCaptor.forClass(Runnable.class);
 
-        AvoInspectorBatcher sut = new AvoInspectorBatcher(mockApplication);
-        sut.networkCallsHandler = mockNetworkCallsHandler;
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
 
         sut.mainHandler = mock(Handler.class);
 

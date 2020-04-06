@@ -34,7 +34,7 @@ public class AppVisibilityTests {
     @Mock
     ApplicationInfo mockApplicationInfo;
     @Mock
-    AvoInspectorSessionTracker mockSessionTracker;
+    AvoSessionTracker mockSessionTracker;
     @Mock
     SharedPreferences mockSharedPrefs;
     @Mock
@@ -51,6 +51,7 @@ public class AppVisibilityTests {
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
         when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
+        when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
     }
 
     @Test

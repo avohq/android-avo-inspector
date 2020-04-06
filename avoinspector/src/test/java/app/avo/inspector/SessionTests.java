@@ -37,9 +37,9 @@ public class SessionTests {
     @Mock
     SharedPreferences mockSharedPrefs;
     @Mock
-    AvoInspectorSessionTracker mockSessionTracker;
+    AvoSessionTracker mockSessionTracker;
     @Mock
-    AvoInspectorBatcher mockBatcher;
+    AvoBatcher mockBatcher;
     @Mock
     SharedPreferences.Editor mockEditor;
 
@@ -139,50 +139,54 @@ public class SessionTests {
     public void readsLastSessionTimestampFromPrefs() {
         when(mockSharedPrefs.getLong(anyString(), eq(-1L))).thenReturn(999L);
 
-        AvoInspectorSessionTracker sut = new AvoInspectorSessionTracker(mockApplication, mockBatcher);
+        AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
 
         Assert.assertEquals(999L, sut.lastSessionTimestamp);
     }
 
     @Test
     public void sessionIsBatchedOnFirstSession() {
-        AvoInspectorSessionTracker sut = new AvoInspectorSessionTracker(mockApplication, mockBatcher);
+        AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
 
         sut.startOrProlongSession(System.currentTimeMillis());
 
         verify(mockBatcher).batchSessionStarted();
 
-        verify(mockEditor, times(1)).putLong(eq(AvoInspectorSessionTracker.sessionStartKey), anyLong());
+        verify(mockEditor, times(1)).putLong(eq(AvoSessionTracker.sessionStartKey), anyLong());
         verify(mockEditor, times(1)).apply();
     }
 
     @Test
     public void sessionIsBatchedOnceIfProlongedMultipleTimes() {
-        AvoInspectorSessionTracker sut = new AvoInspectorSessionTracker(mockApplication, mockBatcher);
+        AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
+
+        long sessionMinutes = TimeUnit.MILLISECONDS.toMinutes(sut.sessionMillis);
 
         sut.startOrProlongSession(System.currentTimeMillis());
         sut.startOrProlongSession(System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(5 * 60 - 1));
+                + TimeUnit.SECONDS.toMillis(sessionMinutes * 60 - 1));
         sut.startOrProlongSession(System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(5 * 60 - 1));
+                + TimeUnit.SECONDS.toMillis(sessionMinutes * 60 - 1));
         sut.startOrProlongSession(System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(5 * 60 - 1));
+                + TimeUnit.SECONDS.toMillis(sessionMinutes * 60 - 1));
         sut.startOrProlongSession(System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(5 * 60 - 1));
+                + TimeUnit.SECONDS.toMillis(sessionMinutes * 60 - 1));
 
         verify(mockBatcher, times(1)).batchSessionStarted();
     }
 
     @Test
     public void twoSessionStartEventsWithDelayGreaterThanSessionLengthBatchTwoSessions() {
-        AvoInspectorSessionTracker sut = new AvoInspectorSessionTracker(mockApplication, mockBatcher);
+        AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
+
+        long sessionMinutes = TimeUnit.MILLISECONDS.toMinutes(sut.sessionMillis);
 
         sut.startOrProlongSession(System.currentTimeMillis());
         sut.startOrProlongSession(System.currentTimeMillis()
-                + TimeUnit.SECONDS.toMillis(5 * 60 + 1));
+                + TimeUnit.SECONDS.toMillis(sessionMinutes * 60 + 1));
 
         verify(mockBatcher, times(2)).batchSessionStarted();
-        verify(mockEditor, times(2)).putLong(eq(AvoInspectorSessionTracker.sessionStartKey), anyLong());
+        verify(mockEditor, times(2)).putLong(eq(AvoSessionTracker.sessionStartKey), anyLong());
         verify(mockEditor, times(2)).apply();
     }
 }

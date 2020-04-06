@@ -26,17 +26,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("WeakerAccess")
 public class AvoInspector implements Inspector {
+
+    static boolean logsEnabled = false;
 
     String apiKey;
     Long appVersion = null;
     String appName;
     int libVersion = BuildConfig.VERSION_CODE;
-    boolean logsEnabled = false;
+
     String env;
 
-    AvoInspectorSessionTracker sessionTracker;
-    AvoInspectorBatcher avoBatcher;
+    AvoSessionTracker sessionTracker;
+    AvoBatcher avoBatcher;
 
     boolean isHidden = true;
 
@@ -57,8 +60,12 @@ public class AvoInspector implements Inspector {
         this.env = env.getName();
         this.apiKey = apiKey;
 
-        avoBatcher = new AvoInspectorBatcher(application);
-        sessionTracker = new AvoInspectorSessionTracker(application, avoBatcher);
+        AvoInstallationId installationId = new AvoInstallationId(application);
+        AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
+                apiKey, env.getName(), appName, appVersion.toString(), libVersion + "",
+                installationId.installationId);
+        avoBatcher = new AvoBatcher(application, networkCallsHandler);
+        sessionTracker = new AvoSessionTracker(application, avoBatcher);
 
         application.registerActivityLifecycleCallbacks(new EmptyActivityLifecycleCallbacks() {
             @Override
@@ -90,7 +97,9 @@ public class AvoInspector implements Inspector {
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties) {
-        Map<String, AvoEventSchemaType> schema = extractSchemaFromJson(eventProperties);
+        logPreExtract(eventName, eventProperties);
+
+        Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
 
         trackSchema(eventName, schema);
 
@@ -99,7 +108,9 @@ public class AvoInspector implements Inspector {
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Map<?, ?> eventProperties) {
-        Map<String, AvoEventSchemaType> schema = extractSchemaFromMap(eventProperties);
+        logPreExtract(eventName, eventProperties);
+
+        Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
 
         trackSchema(eventName, schema);
 
@@ -108,31 +119,56 @@ public class AvoInspector implements Inspector {
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Object eventProperties) {
-        Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties);
+        logPreExtract(eventName, eventProperties);
+
+        Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
 
         trackSchema(eventName, schema);
 
         return schema;
     }
 
-    @Override
-    public void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema) {
-        if (logsEnabled) {
-            Log.d(getClass().getSimpleName(), "Avo State Of Tracking schema tracked");
+    private void logPreExtract(@NonNull String eventName, @Nullable Object eventProperties) {
+        if (isLogging() && eventProperties != null) {
+            Log.d("Avo Inspector", "Supplied event " + eventName + " with params \n" + eventProperties.toString());
         }
+    }
+
+    @Override
+    public void trackSchema(@NonNull String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema) {
+        logPostExtract(eventName, eventSchema);
 
         sessionTracker.startOrProlongSession(System.currentTimeMillis());
 
         avoBatcher.batchTrackEventSchema(eventName, eventSchema);
     }
 
-    @Override
-    public void enableLogging(boolean enable) {
-        logsEnabled = enable;
+    private void logPostExtract(@Nullable String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema) {
+        if (isLogging()) {
+            StringBuilder schemaString = new StringBuilder();
+
+            for (String key: eventSchema.keySet()) {
+                AvoEventSchemaType value = eventSchema.get(key);
+                if (value != null) {
+                    String entry = "\t\"" + key + "\": \"" + value.getName() + "\";\n";
+                    schemaString.append(entry);
+                }
+            }
+
+            if (eventName != null) {
+                Log.d("Avo Inspector", "Saved event " + eventName + " with schema {\n" + schemaString + "}");
+            } else {
+                Log.d("Avo Inspector", "Parsed schema {\n" + schemaString + "}");
+            }
+        }
     }
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties) {
+        return extractSchema(eventProperties, true);
+    }
+
+    private  @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties, boolean shouldLogIfEnabled) {
         Map<String, AvoEventSchemaType> result;
 
         if (eventProperties == null) {
@@ -145,8 +181,8 @@ public class AvoInspector implements Inspector {
             result = extractSchemaFromObject(eventProperties);
         }
 
-        if (logsEnabled) {
-            Log.d("AvoInspector", "Logged schema: " + result.toString());
+        if (shouldLogIfEnabled && isLogging()) {
+            logPostExtract(null, result);
         }
 
         return result;
@@ -313,4 +349,29 @@ public class AvoInspector implements Inspector {
 
         return result;
     }
+
+    static public boolean isLogging() {
+        return logsEnabled;
+    }
+
+    static public void enableLogging(boolean enabled) {
+        logsEnabled = enabled;
+    }
+
+    static public int getBatchSize() {
+        return AvoBatcher.batchSize;
+    }
+
+    static public void setEnableBatchSize(int newBatchSize) {
+        AvoBatcher.batchSize = newBatchSize;
+    }
+
+    static public int getBatchFlushSeconds() {
+        return AvoBatcher.batchFlushSeconds;
+    }
+
+    static public void setBatchFlushSeconds(int newBatchFlushSeconds) {
+        AvoBatcher.batchFlushSeconds = newBatchFlushSeconds;
+    }
+
 }

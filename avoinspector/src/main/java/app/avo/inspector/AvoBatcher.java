@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class AvoInspectorBatcher {
+class AvoBatcher {
 
     static String avoInspectorBatchKey = "avo_inspector_batch_key";
 
@@ -32,16 +32,16 @@ class AvoInspectorBatcher {
 
     private SharedPreferences sharedPrefs;
 
-    AvoInspectorNetworkCallsHandler networkCallsHandler;
+    AvoNetworkCallsHandler networkCallsHandler;
 
     Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    AvoInspectorBatcher(Context context) {
+    AvoBatcher(Context context, AvoNetworkCallsHandler networkCallsHandler) {
         sharedPrefs = context.getSharedPreferences(Util.AVO_SHARED_PREFS_KEY, Context.MODE_PRIVATE);
 
         events = Collections.synchronizedList(new ArrayList<Map<String, String>>());
 
-        networkCallsHandler = new AvoInspectorNetworkCallsHandler();
+        this.networkCallsHandler = networkCallsHandler;
     }
 
     void enterBackground() {
@@ -103,23 +103,13 @@ class AvoInspectorBatcher {
     }
 
     void batchSessionStarted() {
-        Map<String, String> sessionStarted = new HashMap<>();
-        sessionStarted.put("type", "sessionStarted");
-        sessionStarted.put("timestamp", System.currentTimeMillis() + "");
-
-        events.add(sessionStarted);
+        events.add(networkCallsHandler.bodyForSessionStartedCall());
 
         checkIfBatchNeedsToBeSent();
     }
 
-    void batchTrackEventSchema(String eventName, Map<String, AvoEventSchemaType> type) {
-        Map<String, String> trackEvent = new HashMap<>();
-        trackEvent.put("type", "trackEvent");
-        trackEvent.put("timestamp", System.currentTimeMillis() + "");
-        trackEvent.put("name", eventName);
-        trackEvent.put("schema", type.toString());
-
-        events.add(trackEvent);
+    void batchTrackEventSchema(String eventName, Map<String, AvoEventSchemaType> schema) {
+        events.add(networkCallsHandler.bodyForEventSchemaCall(eventName, schema));
 
         checkIfBatchNeedsToBeSent();
     }
@@ -129,7 +119,7 @@ class AvoInspectorBatcher {
         long now = System.currentTimeMillis();
         long millisSinceLastFlushAttempt = now - this.batchFlushAttemptMillis;
 
-        if (batchSize % AvoInspectorBatcher.batchSize == 0 || millisSinceLastFlushAttempt >=
+        if (batchSize % AvoBatcher.batchSize == 0 || millisSinceLastFlushAttempt >=
                 TimeUnit.SECONDS.toMillis(batchFlushSeconds)) {
             postAllAvailableEvents(false);
         }
@@ -156,7 +146,7 @@ class AvoInspectorBatcher {
                 events = new ArrayList<>();
 
                 networkCallsHandler.reportInspectorWithBatchBody(sendingEvents,
-                        new AvoInspectorNetworkCallsHandler.Callback() {
+                        new AvoNetworkCallsHandler.Callback() {
                     @Override
                     public void call(@Nullable String error) {
                         if (clearCache) {

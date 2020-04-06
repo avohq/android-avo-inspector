@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-        final AvoInspector avoInspector = new AvoInspector("apiKey", getApplication(), AvoInspectorEnv.Dev);
+        final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
+                getApplication(), AvoInspectorEnv.Dev);
 
         avoInspector.enableLogging(true);
 

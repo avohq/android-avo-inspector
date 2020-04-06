@@ -3,6 +3,7 @@ package app.avo.inspector;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -107,31 +108,7 @@ public abstract class AvoEventSchemaType {
         @NonNull
         @Override
         java.lang.String getName() {
-            StringBuilder objectSchema = new StringBuilder("{");
-
-            for (java.lang.String childName: children.keySet()) {
-                AvoEventSchemaType childType = children.get(childName);
-                if (childType == null) {
-                    continue;
-                }
-
-                objectSchema.append("\"");
-                objectSchema.append(childName);
-                objectSchema.append("\"");
-                objectSchema.append(": ");
-                if (childType instanceof AvoEventSchemaType.AvoObject) {
-                    objectSchema.append(childType.getName());
-                    objectSchema.append(",");
-                } else {
-                    objectSchema.append("\"");
-                    objectSchema.append(childType.getName());
-                    objectSchema.append("\",");
-                }
-            }
-
-            objectSchema.append("}");
-
-            return objectSchema.toString();
+            return Util.remapProperties(children);
         }
     }
 
