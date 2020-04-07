@@ -23,8 +23,8 @@ class AvoBatcher {
 
     static String avoInspectorBatchKey = "avo_inspector_batch_key";
 
-    static int batchSize = 20;
-    static int batchFlushSeconds = 20;
+    static int batchSize = 30;
+    static int batchFlushSeconds = 30;
 
     List<Map<String, String>> events;
 

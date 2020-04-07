@@ -356,7 +356,7 @@ public class BatchingTests {
 
         sut.mainHandler = mock(Handler.class);
 
-        long flushMillis = TimeUnit.SECONDS.toMillis(20);
+        long flushMillis = TimeUnit.SECONDS.toMillis(AvoInspector.getBatchFlushSeconds());
 
         // Given
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis + 1000;

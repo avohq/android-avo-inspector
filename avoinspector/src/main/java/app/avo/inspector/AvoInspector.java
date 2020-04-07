@@ -67,6 +67,14 @@ public class AvoInspector implements Inspector {
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
         sessionTracker = new AvoSessionTracker(application, avoBatcher);
 
+        if (env == AvoInspectorEnv.Dev) {
+            setBatchFlushSeconds(1);
+            enableLogging(true);
+        } else {
+            setBatchFlushSeconds(30);
+            enableLogging(false);
+        }
+
         application.registerActivityLifecycleCallbacks(new EmptyActivityLifecycleCallbacks() {
             @Override
             public void onActivityStarted(@NonNull Activity activity) {

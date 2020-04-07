@@ -62,6 +62,39 @@ public class InitializationTests {
     }
 
     @Test
+    public void setsFlushAndLogsInDevMode() {
+        AvoInspector.enableLogging(false);
+        AvoInspector.setBatchFlushSeconds(5);
+
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
+
+        assertEquals(1, AvoInspector.getBatchFlushSeconds());
+        assertTrue(AvoInspector.isLogging());
+    }
+
+    @Test
+    public void setsFlushAndLogsInProdMode() {
+        AvoInspector.enableLogging(true);
+        AvoInspector.setBatchFlushSeconds(5);
+
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Prod);
+
+        assertEquals(30, AvoInspector.getBatchFlushSeconds());
+        assertFalse(AvoInspector.isLogging());
+    }
+
+    @Test
+    public void setsFlushAndLogsInStagingMode() {
+        AvoInspector.enableLogging(true);
+        AvoInspector.setBatchFlushSeconds(5);
+
+        sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Staging);
+
+        assertEquals(30, AvoInspector.getBatchFlushSeconds());
+        assertFalse(AvoInspector.isLogging());
+    }
+
+    @Test
     public void initsWithProdEnv() {
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Prod);
 
