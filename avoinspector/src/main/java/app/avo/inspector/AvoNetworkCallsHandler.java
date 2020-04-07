@@ -46,17 +46,17 @@ class AvoNetworkCallsHandler {
         this.installationId = installationId;
     }
 
-    Map<String, String> bodyForSessionStartedCall() {
-        Map<String, String> sessionBody = createBaseCallBody();
+    Map<String, Object> bodyForSessionStartedCall() {
+        Map<String, Object> sessionBody = createBaseCallBody();
         sessionBody.put("type", "sessionStarted");
         return sessionBody;
     }
 
-    Map<String, String> bodyForEventSchemaCall(String eventName,
+    Map<String, Object> bodyForEventSchemaCall(String eventName,
                                                Map<String, AvoEventSchemaType> schema) {
         String properties = Util.remapProperties(schema);
 
-        Map<String, String> eventSchemaBody = createBaseCallBody();
+        Map<String, Object> eventSchemaBody = createBaseCallBody();
         eventSchemaBody.put("type", "event");
         eventSchemaBody.put("eventName", eventName);
         eventSchemaBody.put("eventProperties", properties);
@@ -64,8 +64,8 @@ class AvoNetworkCallsHandler {
         return eventSchemaBody;
     }
 
-    private Map<String, String> createBaseCallBody() {
-        Map<String, String> result = new HashMap<>();
+    private Map<String, Object> createBaseCallBody() {
+        Map<String, Object> result = new HashMap<>();
 
         result.put("apiKey", apiKey);
         result.put("appName", appName);
@@ -76,11 +76,13 @@ class AvoNetworkCallsHandler {
         result.put("messageId", UUID.randomUUID().toString());
         result.put("trackingId", installationId);
         result.put("createdAt", Util.currentTimeAsISO8601UTCString());
+        result.put("sessionId", AvoSessionTracker.sessionId);
+        result.put("samplingRate", samplingRate);
 
         return result;
     }
 
-    void reportInspectorWithBatchBody(final List<Map<String, String>> data, final Callback completionHandler) {
+    void reportInspectorWithBatchBody(final List<Map<String, Object>> data, final Callback completionHandler) {
         if (Math.random() > samplingRate) {
             if (AvoInspector.isLogging()) {
                 Log.d("Avo Inspector", "Last event schema dropped due to sampling rate");
@@ -89,16 +91,18 @@ class AvoNetworkCallsHandler {
         }
 
         if (AvoInspector.isLogging()) {
-            for (Map<String, String> item : data) {
-                String type = item.get("type");
+            for (Map<String, Object> item : data) {
+                Object type = item.get("type");
 
                 if (type != null && type.equals("sessionStarted")) {
                     Log.d("Avo Inspector", "Sending session started event");
                 } else if (type != null && type.equals("event")) {
-                    String eventName = item.get("eventName");
-                    String eventProps = item.get("eventProperties");
+                    Object eventName = item.get("eventName");
+                    Object eventProps = item.get("eventProperties");
 
-                    Log.d("Avo Inspector", "Sending event " + eventName + " with schema {\n" + eventProps + "\n}sdfgd");
+                    if (eventName != null && eventProps != null) {
+                        Log.d("Avo Inspector", "Sending event " + eventName + " with schema {\n" + eventProps + "\n}");
+                    }
                 } else {
                     Log.d("Avo Inspector", "Error! Unknown event type.");
                 }
@@ -109,7 +113,7 @@ class AvoNetworkCallsHandler {
             @Override
             public void run() {
                 try {
-                    URL apiUrl = new URL("https://api.avo.app/datascope/v0/track");
+                    URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
 
                     HttpsURLConnection connection = null;
                     try {
@@ -184,10 +188,10 @@ class AvoNetworkCallsHandler {
 
     }
 
-    private void writeTrackingCallBody(List<Map<String, String>> data, HttpsURLConnection connection) throws IOException {
+    private void writeTrackingCallBody(List<Map<String, Object>> data, HttpsURLConnection connection) throws IOException {
 
         JSONArray body = new JSONArray();
-        for (Map<String, String> event: data) {
+        for (Map<String, Object> event: data) {
             JSONObject eventJson = new JSONObject(event);
             body.put(eventJson);
         }

@@ -30,8 +30,8 @@ public class SamplingRateTests {
         sut.callbackHandler = mock(Handler.class);
 
         for (int i = 0; i < 1000; i++) {
-            final Map<String, String> body = sut.bodyForSessionStartedCall();
-            sut.reportInspectorWithBatchBody(new ArrayList<Map<String, String>>() {{
+            final Map<String, Object> body = sut.bodyForSessionStartedCall();
+            sut.reportInspectorWithBatchBody(new ArrayList<Map<String, Object>>() {{
                                                  add(body);
                                              }},
                     new AvoNetworkCallsHandler.Callback() {
@@ -57,8 +57,8 @@ public class SamplingRateTests {
         sut.callbackHandler = mock(Handler.class);
 
         for (int i = 0; i < 10; i++) {
-            final Map<String, String> body = sut.bodyForSessionStartedCall();
-            sut.reportInspectorWithBatchBody(new ArrayList<Map<String, String>>() {{
+            final Map<String, Object> body = sut.bodyForSessionStartedCall();
+            sut.reportInspectorWithBatchBody(new ArrayList<Map<String, Object>>() {{
                                                  add(body);
                                              }},
                     new AvoNetworkCallsHandler.Callback() {

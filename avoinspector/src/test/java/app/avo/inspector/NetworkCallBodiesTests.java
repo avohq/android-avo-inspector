@@ -18,8 +18,10 @@ public class NetworkCallBodiesTests {
                 "testAppVersion", "testLibVersion",
                 "testInstallationId"
         );
+        sut.samplingRate = 0.7;
+        AvoSessionTracker.sessionId = "testSessionId";
 
-        Map<String, String> body = sut.bodyForSessionStartedCall();
+        Map<String, Object> body = sut.bodyForSessionStartedCall();
 
         Assert.assertEquals("sessionStarted", body.get("type"));
 
@@ -32,6 +34,8 @@ public class NetworkCallBodiesTests {
         Assert.assertEquals("testLibVersion", body.get("libVersion"));
         Assert.assertEquals("android", body.get("libPlatform"));
         Assert.assertEquals("testInstallationId", body.get("trackingId"));
+        Assert.assertEquals(0.7, body.get("samplingRate"));
+        Assert.assertEquals("testSessionId", body.get("sessionId"));
     }
 
     @Test
@@ -42,6 +46,9 @@ public class NetworkCallBodiesTests {
                 "testAppVersion", "testLibVersion",
                 "testInstallationId"
         );
+
+        sut.samplingRate = 1;
+        AvoSessionTracker.sessionId = "testSessionId";
 
         Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
         AvoEventSchemaType.AvoObject avoObject = new AvoEventSchemaType.AvoObject(
@@ -61,7 +68,7 @@ public class NetworkCallBodiesTests {
             add(new AvoEventSchemaType.Int());
         }}));
 
-        Map<String, String> body = sut.bodyForEventSchemaCall("avoObjectEvent",
+        Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
                 testSchema);
 
         Assert.assertEquals("event", body.get("type"));
@@ -76,5 +83,7 @@ public class NetworkCallBodiesTests {
         Assert.assertEquals("testLibVersion", body.get("libVersion"));
         Assert.assertEquals("android", body.get("libPlatform"));
         Assert.assertEquals("testInstallationId", body.get("trackingId"));
+        Assert.assertEquals(1.0, body.get("samplingRate"));
+        Assert.assertEquals("testSessionId", body.get("sessionId"));
     }
 }

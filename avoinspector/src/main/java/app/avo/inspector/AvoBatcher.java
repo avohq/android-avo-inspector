@@ -26,7 +26,7 @@ class AvoBatcher {
     static int batchSize = 30;
     static int batchFlushSeconds = 30;
 
-    List<Map<String, String>> events;
+    List<Map<String, Object>> events;
 
     volatile long batchFlushAttemptMillis = System.currentTimeMillis();
 
@@ -39,7 +39,7 @@ class AvoBatcher {
     AvoBatcher(Context context, AvoNetworkCallsHandler networkCallsHandler) {
         sharedPrefs = context.getSharedPreferences(Util.AVO_SHARED_PREFS_KEY, Context.MODE_PRIVATE);
 
-        events = Collections.synchronizedList(new ArrayList<Map<String, String>>());
+        events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
 
         this.networkCallsHandler = networkCallsHandler;
     }
@@ -71,7 +71,7 @@ class AvoBatcher {
 
     void enterForeground() {
         final String savedData = sharedPrefs.getString(avoInspectorBatchKey, null);
-        events = Collections.synchronizedList(new ArrayList<Map<String, String>>());
+        events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
         if (savedData != null) {
             new Thread(new Runnable() {
                 @Override
@@ -79,21 +79,19 @@ class AvoBatcher {
                     JSONArray jsonEvents;
                     try {
                         jsonEvents = new JSONArray(savedData);
-                        synchronized (events) {
-                            for (int i = 0; i < jsonEvents.length(); i++) {
-                                try {
-                                    JSONObject jsonEvent = jsonEvents.getJSONObject(i);
+                        for (int i = 0; i < jsonEvents.length(); i++) {
+                            try {
+                                JSONObject jsonEvent = jsonEvents.getJSONObject(i);
 
-                                    Map<String, String> event = new HashMap<>();
-                                    Iterator keys = jsonEvent.keys();
-                                    while (keys.hasNext()) {
-                                        String key = (String) keys.next();
-                                        event.put(key, jsonEvent.getString(key));
-                                    }
+                                Map<String, Object> event = new HashMap<>();
+                                Iterator keys = jsonEvent.keys();
+                                while (keys.hasNext()) {
+                                    String key = (String) keys.next();
+                                    event.put(key, jsonEvent.get(key));
+                                }
 
-                                    events.add(event);
-                                } catch (JSONException ignored) {}
-                            }
+                                events.add(event);
+                            } catch (JSONException ignored) {}
                         }
                     } catch (JSONException ignored) { }
                     postAllAvailableEvents(true);
@@ -142,7 +140,7 @@ class AvoBatcher {
 
                 batchFlushAttemptMillis = System.currentTimeMillis();
 
-                final List<Map<String, String>> sendingEvents = events;
+                final List<Map<String, Object>> sendingEvents = events;
                 events = new ArrayList<>();
 
                 networkCallsHandler.reportInspectorWithBatchBody(sendingEvents,
@@ -165,10 +163,10 @@ class AvoBatcher {
     private void filterEvents() {
         //noinspection SynchronizeOnNonFinalField
         synchronized (events) {
-            Iterator<Map<String, String>> iter = events.iterator();
+            Iterator<Map<String, Object>> iter = events.iterator();
 
             while (iter.hasNext()) {
-                Map<String, String> item = iter.next();
+                Map<String, Object> item = iter.next();
                 if (!item.containsKey("type")) {
                     iter.remove();
                 }

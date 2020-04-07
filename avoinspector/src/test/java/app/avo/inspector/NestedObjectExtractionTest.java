@@ -19,6 +19,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
@@ -47,6 +48,7 @@ public class NestedObjectExtractionTest {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
+        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
 
         sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
     }

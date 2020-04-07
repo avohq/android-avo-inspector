@@ -40,6 +40,7 @@ public class InitializationTests {
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.getString(eq(AvoInstallationId.cacheKey), anyString())).thenReturn("testInstallationId");
+        when(mockSharedPrefs.getString(eq(AvoSessionTracker.sessionIdKey), (String) eq(null))).thenReturn("");
     }
 
     @Test

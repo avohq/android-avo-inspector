@@ -16,8 +16,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -53,7 +55,9 @@ public class SessionTests {
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
+        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
         when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
+        when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
     }
 
     @Test
@@ -145,6 +149,37 @@ public class SessionTests {
     }
 
     @Test
+    public void readsLastSessionIdFromPrefs() {
+        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("stored session id");
+
+        new AvoSessionTracker(mockApplication, mockBatcher);
+
+        Assert.assertEquals("stored session id", AvoSessionTracker.sessionId);
+    }
+
+    @Test
+    public void createsSessionIdIfNothingStoredInPrefs() {
+        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn(null);
+
+        new AvoSessionTracker(mockApplication, mockBatcher);
+
+        assertNotNull(AvoSessionTracker.sessionId);
+        verify(mockEditor).putString(AvoSessionTracker.sessionIdKey, AvoSessionTracker.sessionId);
+        verify(mockEditor).apply();
+    }
+
+    @Test
+    public void createsSessionIdOnNewSession() {
+        AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
+
+        sut.startOrProlongSession(System.currentTimeMillis());
+
+        assertNotNull(AvoSessionTracker.sessionId);
+        verify(mockEditor).putString(AvoSessionTracker.sessionIdKey, AvoSessionTracker.sessionId);
+        verify(mockEditor, times(2)).apply();
+    }
+
+    @Test
     public void sessionIsBatchedOnFirstSession() {
         AvoSessionTracker sut = new AvoSessionTracker(mockApplication, mockBatcher);
 
@@ -153,7 +188,7 @@ public class SessionTests {
         verify(mockBatcher).batchSessionStarted();
 
         verify(mockEditor, times(1)).putLong(eq(AvoSessionTracker.sessionStartKey), anyLong());
-        verify(mockEditor, times(1)).apply();
+        verify(mockEditor, times(2)).apply();
     }
 
     @Test
@@ -187,6 +222,6 @@ public class SessionTests {
 
         verify(mockBatcher, times(2)).batchSessionStarted();
         verify(mockEditor, times(2)).putLong(eq(AvoSessionTracker.sessionStartKey), anyLong());
-        verify(mockEditor, times(2)).apply();
+        verify(mockEditor, times(4)).apply();
     }
 }

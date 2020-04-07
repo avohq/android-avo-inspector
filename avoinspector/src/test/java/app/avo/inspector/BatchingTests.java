@@ -114,7 +114,7 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(Runnable.class);
         ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
                 = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
-        ArgumentCaptor<List<Map<String, String>>> listCaptor
+        ArgumentCaptor<List<Map<String, Object>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
         AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
@@ -122,7 +122,7 @@ public class BatchingTests {
         sut.mainHandler = mock(Handler.class);
 
         for (int i = 0; i < 1005; i++) {
-            Map<String, String> event = new HashMap<>();
+            Map<String, Object> event = new HashMap<>();
             event.put("type", "test");
             sut.events.add(event);
         }
@@ -173,7 +173,7 @@ public class BatchingTests {
         sut.mainHandler = mock(Handler.class);
 
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            Map<String, String> event = new HashMap<>();
+            Map<String, Object> event = new HashMap<>();
             event.put("no-type", "test");
             sut.events.add(event);
         }
@@ -192,7 +192,7 @@ public class BatchingTests {
         Thread.sleep(500);
 
         // Then
-        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, String>>anyList(),
+        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, Object>>anyList(),
                 any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
 
@@ -206,7 +206,7 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(Runnable.class);
         ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
                 = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
-        ArgumentCaptor<List<Map<String, String>>> listCaptor
+        ArgumentCaptor<List<Map<String, Object>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
         AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
@@ -214,7 +214,7 @@ public class BatchingTests {
         sut.mainHandler = mock(Handler.class);
 
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            Map<String, String> event = new HashMap<>();
+            Map<String, Object> event = new HashMap<>();
             event.put("type", "test");
             sut.events.add(event);
         }
@@ -246,7 +246,7 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(Runnable.class);
         ArgumentCaptor<AvoNetworkCallsHandler.Callback> networkCallbackCaptor
                 = ArgumentCaptor.forClass(AvoNetworkCallsHandler.Callback.class);
-        ArgumentCaptor<List<Map<String, String>>> listCaptor
+        ArgumentCaptor<List<Map<String, Object>>> listCaptor
                 = ArgumentCaptor.forClass(List.class);
 
         AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
@@ -255,7 +255,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = 0;
 
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            Map<String, String> event = new HashMap<>();
+            Map<String, Object> event = new HashMap<>();
             event.put("type", "test");
             sut.events.add(event);
         }
@@ -293,7 +293,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = 0;
 
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            Map<String, String> event = new HashMap<>();
+            Map<String, Object> event = new HashMap<>();
             event.put("no-type", "test");
             sut.events.add(event);
         }
@@ -307,7 +307,7 @@ public class BatchingTests {
         Thread.sleep(500);
 
         // Then
-        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, String>>anyList(),
+        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, Object>>anyList(),
                 any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
         assertEquals(0, sut.batchFlushAttemptMillis);
