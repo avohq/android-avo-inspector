@@ -362,7 +362,7 @@ public class AvoInspector implements Inspector {
         return AvoBatcher.batchSize;
     }
 
-    static public void setEnableBatchSize(int newBatchSize) {
+    static public void setBatchSize(int newBatchSize) {
         AvoBatcher.batchSize = newBatchSize;
     }
 
