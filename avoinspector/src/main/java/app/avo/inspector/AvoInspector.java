@@ -47,7 +47,8 @@ public class AvoInspector implements Inspector {
 
     boolean isHidden = true;
 
-    @Nullable DebuggerManager debugger;
+    @Nullable
+    private DebuggerManager debugger;
 
     public AvoInspector(String apiKey, Application application, AvoInspectorEnv env) {
         this(apiKey, application, env, null);
@@ -426,26 +427,38 @@ public class AvoInspector implements Inspector {
         return result;
     }
 
+    @SuppressWarnings("unused")
+    @Nullable
+    public DebuggerManager getDebugger() {
+        return debugger;
+    }
+
+    @SuppressWarnings("WeakerAccess")
     static public boolean isLogging() {
         return logsEnabled;
     }
 
+    @SuppressWarnings("WeakerAccess")
     static public void enableLogging(boolean enabled) {
         logsEnabled = enabled;
     }
 
+    @SuppressWarnings("WeakerAccess")
     static public int getBatchSize() {
         return AvoBatcher.batchSize;
     }
 
+    @SuppressWarnings("WeakerAccess")
     static public void setBatchSize(int newBatchSize) {
         AvoBatcher.batchSize = newBatchSize;
     }
 
+    @SuppressWarnings("WeakerAccess")
     static public int getBatchFlushSeconds() {
         return AvoBatcher.batchFlushSeconds;
     }
 
+    @SuppressWarnings("WeakerAccess")
     static public void setBatchFlushSeconds(int newBatchFlushSeconds) {
         AvoBatcher.batchFlushSeconds = newBatchFlushSeconds;
     }
