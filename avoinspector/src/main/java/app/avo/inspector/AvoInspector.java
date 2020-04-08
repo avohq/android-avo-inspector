@@ -285,13 +285,13 @@ public class AvoInspector implements Inspector {
         try {
             return objectToAvoType(eventPropertyField.get(eventProperties));
         } catch (IllegalAccessException ignored) {
-            return new AvoEventSchemaType.Unknown();
+            return new AvoEventSchemaType.AvoUnknownType();
         }
     }
 
     private AvoEventSchemaType objectToAvoType(@Nullable Object val) {
-        if (val == null || val instanceof AvoEventSchemaType.Null || val == JSONObject.NULL) {
-            return new AvoEventSchemaType.Null();
+        if (val == null || val instanceof AvoEventSchemaType.AvoNull || val == JSONObject.NULL) {
+            return new AvoEventSchemaType.AvoNull();
         } else {
             if (val instanceof List) {
                 Set<AvoEventSchemaType> subtypes = new HashSet<>();
@@ -300,7 +300,7 @@ public class AvoInspector implements Inspector {
                     subtypes.add(objectToAvoType(v));
                 }
 
-                return new AvoEventSchemaType.List(subtypes);
+                return new AvoEventSchemaType.AvoList(subtypes);
             } else if (val instanceof JSONArray) {
                 Set<AvoEventSchemaType> subItems = new HashSet<>();
                 JSONArray jsonArray = (JSONArray) val;
@@ -310,7 +310,7 @@ public class AvoInspector implements Inspector {
                     } catch (JSONException ignored) { }
                 }
 
-                return new AvoEventSchemaType.List(subItems);
+                return new AvoEventSchemaType.AvoList(subItems);
             } else if (val instanceof Map) {
                 AvoEventSchemaType.AvoObject result = new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>());
 
@@ -324,13 +324,13 @@ public class AvoInspector implements Inspector {
 
                 return result;
             } else if (val instanceof Integer || val instanceof  Byte || val instanceof Long || val instanceof  Short) {
-                return new AvoEventSchemaType.Int();
+                return new AvoEventSchemaType.AvoInt();
             } else if (val instanceof Boolean) {
-                return new AvoEventSchemaType.Boolean();
+                return new AvoEventSchemaType.AvoBoolean();
             } else if (val instanceof Float || val instanceof  Double) {
-                return new AvoEventSchemaType.Float();
+                return new AvoEventSchemaType.AvoFloat();
             } else if (val instanceof String || val instanceof  Character) {
-                return new AvoEventSchemaType.String();
+                return new AvoEventSchemaType.AvoString();
             } else {
                 return arrayOrUnknownToAvoType(val);
             }
@@ -342,51 +342,51 @@ public class AvoInspector implements Inspector {
         switch (className) {
             case "[Ljava.lang.String;":
                 Set<AvoEventSchemaType> subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.String());
-                subtypes.add(new AvoEventSchemaType.Null());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoString());
+                subtypes.add(new AvoEventSchemaType.AvoNull());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[Ljava.lang.Integer;":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Int());
-                subtypes.add(new AvoEventSchemaType.Null());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoInt());
+                subtypes.add(new AvoEventSchemaType.AvoNull());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[I":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Int());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoInt());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[Ljava.lang.Boolean;":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Boolean());
-                subtypes.add(new AvoEventSchemaType.Null());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoBoolean());
+                subtypes.add(new AvoEventSchemaType.AvoNull());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[Z":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Boolean());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoBoolean());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[Ljava.lang.Float;":
             case "[Ljava.lang.Double;":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Float());
-                subtypes.add(new AvoEventSchemaType.Null());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoFloat());
+                subtypes.add(new AvoEventSchemaType.AvoNull());
+                return new AvoEventSchemaType.AvoList(subtypes);
             case "[D":
             case "[F":
                 subtypes = new HashSet<>();
-                subtypes.add(new AvoEventSchemaType.Float());
-                return new AvoEventSchemaType.List(subtypes);
+                subtypes.add(new AvoEventSchemaType.AvoFloat());
+                return new AvoEventSchemaType.AvoList(subtypes);
             default:
                 if (className.startsWith("[L") && className.contains("List")) {
                     subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>()));
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
+                    subtypes.add(new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>()));
+                    subtypes.add(new AvoEventSchemaType.AvoNull());
+                    return new AvoEventSchemaType.AvoList(subtypes);
                 } else if (className.startsWith("[L")) {
                     subtypes = new HashSet<>();
                     subtypes.add(new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>()));
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
+                    subtypes.add(new AvoEventSchemaType.AvoNull());
+                    return new AvoEventSchemaType.AvoList(subtypes);
                 } else {
-                    return new AvoEventSchemaType.Unknown();
+                    return new AvoEventSchemaType.AvoUnknownType();
                 }
         }
     }

@@ -55,19 +55,19 @@ public class NetworkCallBodiesTests {
                 new HashMap<String, AvoEventSchemaType>());
         testSchema.put("nested", avoObject);
 
-        avoObject.children.put("v0", new AvoEventSchemaType.Int());
-        avoObject.children.put("v1", new AvoEventSchemaType.Boolean());
-        avoObject.children.put("v2", new AvoEventSchemaType.Float());
-        avoObject.children.put("v3", new AvoEventSchemaType.String());
-        avoObject.children.put("v4", new AvoEventSchemaType.Unknown());
-        avoObject.children.put("v5", new AvoEventSchemaType.Null());
+        avoObject.children.put("v0", new AvoEventSchemaType.AvoInt());
+        avoObject.children.put("v1", new AvoEventSchemaType.AvoBoolean());
+        avoObject.children.put("v2", new AvoEventSchemaType.AvoFloat());
+        avoObject.children.put("v3", new AvoEventSchemaType.AvoString());
+        avoObject.children.put("v4", new AvoEventSchemaType.AvoUnknownType());
+        avoObject.children.put("v5", new AvoEventSchemaType.AvoNull());
         avoObject.children.put("v6", new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>() {{
-            put("a", new AvoEventSchemaType.Int());
+            put("a", new AvoEventSchemaType.AvoInt());
         }}));
-        avoObject.children.put("v7", new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>() {{
-            add(new AvoEventSchemaType.Int());
+        avoObject.children.put("v7", new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>() {{
+            add(new AvoEventSchemaType.AvoInt());
             add(new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>() {{
-                put("key", new AvoEventSchemaType.Float());
+                put("key", new AvoEventSchemaType.AvoFloat());
             }}));
         }}));
 

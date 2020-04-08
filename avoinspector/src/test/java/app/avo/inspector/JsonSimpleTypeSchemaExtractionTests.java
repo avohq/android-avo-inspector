@@ -2,7 +2,6 @@ package app.avo.inspector;
 
 import android.app.Application;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -13,7 +12,6 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Map;
@@ -82,7 +80,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            assertEquals(new AvoEventSchemaType.Int(), value);
+            assertEquals(new AvoEventSchemaType.AvoInt(), value);
         }
     }
 
@@ -104,7 +102,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            assertEquals(new AvoEventSchemaType.Float(), value);
+            assertEquals(new AvoEventSchemaType.AvoFloat(), value);
         }
     }
 
@@ -125,7 +123,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            assertEquals(new AvoEventSchemaType.Boolean(), value);
+            assertEquals(new AvoEventSchemaType.AvoBoolean(), value);
         }
     }
 
@@ -146,7 +144,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            assertEquals(new AvoEventSchemaType.String(), value);
+            assertEquals(new AvoEventSchemaType.AvoString(), value);
         }
     }
 
@@ -155,7 +153,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
         JSONObject testJsonObj = new JSONObject();
         try {
             testJsonObj.put("v0", null);
-            testJsonObj.put("v1", new AvoEventSchemaType.Null());
+            testJsonObj.put("v1", new AvoEventSchemaType.AvoNull());
             testJsonObj.put("v2", JSONObject.NULL);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -167,7 +165,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            assertEquals(new AvoEventSchemaType.Null(), value);
+            assertEquals(new AvoEventSchemaType.AvoNull(), value);
         }
     }
 }

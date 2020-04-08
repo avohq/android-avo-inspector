@@ -88,9 +88,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.Int());
-            expected.subtypes.add(new AvoEventSchemaType.String());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoInt());
+            expected.subtypes.add(new AvoEventSchemaType.AvoString());
             assertEquals(expected, value);
         }
     }
@@ -125,9 +125,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.Int());
-            expected.subtypes.add(new AvoEventSchemaType.String());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoInt());
+            expected.subtypes.add(new AvoEventSchemaType.AvoString());
             assertEquals(expected, value);
         }
     }
@@ -152,8 +152,8 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.Int());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoInt());
             assertEquals(expected, value);
         }
     }
@@ -176,9 +176,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.String());
-            expected.subtypes.add(new AvoEventSchemaType.Null());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoString());
+            expected.subtypes.add(new AvoEventSchemaType.AvoNull());
             assertEquals(expected, value);
         }
     }
@@ -201,9 +201,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.Float());
-            expected.subtypes.add(new AvoEventSchemaType.Null());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoFloat());
+            expected.subtypes.add(new AvoEventSchemaType.AvoNull());
             assertEquals(expected, value);
         }
     }
@@ -226,8 +226,8 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.Boolean());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoBoolean());
             assertEquals(expected, value);
         }
     }
@@ -250,9 +250,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
-            expected.subtypes.add(new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>()));
-            expected.subtypes.add(new AvoEventSchemaType.Null());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>()));
+            expected.subtypes.add(new AvoEventSchemaType.AvoNull());
             assertEquals(expected, value);
         }
     }
@@ -275,9 +275,9 @@ public class ListExtractionTests {
 
         for (String key: schema.keySet()) {
             AvoEventSchemaType value = schema.get(key);
-            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            AvoEventSchemaType.AvoList expected = new AvoEventSchemaType.AvoList(new HashSet<AvoEventSchemaType>());
             expected.subtypes.add(new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>()));
-            expected.subtypes.add(new AvoEventSchemaType.Null());
+            expected.subtypes.add(new AvoEventSchemaType.AvoNull());
             assertEquals(expected, value);
         }
     }

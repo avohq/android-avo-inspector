@@ -2,7 +2,6 @@ package app.avo.inspector;
 
 import android.app.Application;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -72,7 +71,7 @@ public class NestedObjectExtractionTest {
                     AvoEventSchemaType>();
 
             AvoEventSchemaType.AvoObject nestedObj = new AvoEventSchemaType.AvoObject(expected);
-            expected.put("nested", new AvoEventSchemaType.String());
+            expected.put("nested", new AvoEventSchemaType.AvoString());
 
             assertEquals(new AvoEventSchemaType.AvoObject(expected), value);
         }
@@ -104,14 +103,14 @@ public class NestedObjectExtractionTest {
             AvoEventSchemaType value = schema.get(key);
             Map expected = new HashMap<String,
                     AvoEventSchemaType>();
-            expected.put("v0", new AvoEventSchemaType.Int());
-            expected.put("v1", new AvoEventSchemaType.Int());
-            expected.put("v2", new AvoEventSchemaType.Int());
-            expected.put("v3", new AvoEventSchemaType.Int());
-            expected.put("v4", new AvoEventSchemaType.Int());
-            expected.put("v5", new AvoEventSchemaType.Int());
-            expected.put("v6", new AvoEventSchemaType.Int());
-            expected.put("v7", new AvoEventSchemaType.Int());
+            expected.put("v0", new AvoEventSchemaType.AvoInt());
+            expected.put("v1", new AvoEventSchemaType.AvoInt());
+            expected.put("v2", new AvoEventSchemaType.AvoInt());
+            expected.put("v3", new AvoEventSchemaType.AvoInt());
+            expected.put("v4", new AvoEventSchemaType.AvoInt());
+            expected.put("v5", new AvoEventSchemaType.AvoInt());
+            expected.put("v6", new AvoEventSchemaType.AvoInt());
+            expected.put("v7", new AvoEventSchemaType.AvoInt());
             assertEquals(new AvoEventSchemaType.AvoObject(expected), value);
         }
     }
@@ -145,14 +144,14 @@ public class NestedObjectExtractionTest {
                     AvoEventSchemaType>();
             Map nestedExpected = new HashMap<String,
                     AvoEventSchemaType>();
-            nestedExpected.put("v0", new AvoEventSchemaType.Int());
-            nestedExpected.put("v1", new AvoEventSchemaType.Int());
-            nestedExpected.put("v2", new AvoEventSchemaType.Int());
-            nestedExpected.put("v3", new AvoEventSchemaType.Int());
-            nestedExpected.put("v4", new AvoEventSchemaType.Int());
-            nestedExpected.put("v5", new AvoEventSchemaType.Int());
-            nestedExpected.put("v6", new AvoEventSchemaType.Int());
-            nestedExpected.put("v7", new AvoEventSchemaType.Int());
+            nestedExpected.put("v0", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v1", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v2", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v3", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v4", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v5", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v6", new AvoEventSchemaType.AvoInt());
+            nestedExpected.put("v7", new AvoEventSchemaType.AvoInt());
 
             AvoEventSchemaType.AvoObject nestedObj = new AvoEventSchemaType.AvoObject(nestedExpected);
             expected.put("double_nested", nestedObj);

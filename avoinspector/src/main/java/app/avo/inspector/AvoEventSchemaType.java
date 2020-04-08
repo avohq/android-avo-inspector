@@ -8,7 +8,7 @@ import java.util.Set;
 
 public abstract class AvoEventSchemaType {
 
-    @NonNull abstract java.lang.String getName();
+    @NonNull abstract String getName();
 
     @Override
     public boolean equals(@Nullable Object obj) {
@@ -26,60 +26,60 @@ public abstract class AvoEventSchemaType {
 
     @NonNull
     @Override
-    public java.lang.String toString() {
+    public String toString() {
         return getName();
     }
 
-    static class Int extends AvoEventSchemaType {
+    static class AvoInt extends AvoEventSchemaType {
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "int";
         }
     }
 
-    static class Float extends AvoEventSchemaType {
+    static class AvoFloat extends AvoEventSchemaType {
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "float";
         }
     }
 
-    static class Boolean extends AvoEventSchemaType {
+    static class AvoBoolean extends AvoEventSchemaType {
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "boolean";
         }
     }
 
-    static class String extends AvoEventSchemaType {
+    static class AvoString extends AvoEventSchemaType {
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "string";
         }
     }
 
-    static class Null extends AvoEventSchemaType {
+    static class AvoNull extends AvoEventSchemaType {
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "null";
         }
     }
 
-    static class List extends AvoEventSchemaType {
+    static class AvoList extends AvoEventSchemaType {
         @NonNull Set<AvoEventSchemaType> subtypes;
 
-        List(@NonNull Set<AvoEventSchemaType> subtypes) {
+        AvoList(@NonNull Set<AvoEventSchemaType> subtypes) {
             this.subtypes = subtypes;
         }
 
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             StringBuilder types = new StringBuilder();
 
             boolean first = true;
@@ -98,25 +98,25 @@ public abstract class AvoEventSchemaType {
 
     static class AvoObject extends AvoEventSchemaType {
 
-        @NonNull Map<java.lang.String, AvoEventSchemaType> children;
+        @NonNull Map<String, AvoEventSchemaType> children;
 
-        AvoObject(@NonNull Map<java.lang.String, AvoEventSchemaType> children) {
+        AvoObject(@NonNull Map<String, AvoEventSchemaType> children) {
             this.children = children;
         }
 
         @NonNull
         @Override
-        java.lang.String getName() {
-            java.lang.String jsonArrayString = Util.remapProperties(children).toString();
+        String getName() {
+            String jsonArrayString = Util.remapProperties(children).toString();
             return jsonArrayString.substring(1, jsonArrayString.length() - 1);
         }
     }
 
-    static class Unknown extends AvoEventSchemaType {
+    static class AvoUnknownType extends AvoEventSchemaType {
 
         @NonNull
         @Override
-        java.lang.String getName() {
+        String getName() {
             return "unknown";
         }
     }
