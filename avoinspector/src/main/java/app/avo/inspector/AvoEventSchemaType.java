@@ -3,7 +3,6 @@ package app.avo.inspector;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,7 +107,8 @@ public abstract class AvoEventSchemaType {
         @NonNull
         @Override
         java.lang.String getName() {
-            return Util.remapProperties(children);
+            java.lang.String jsonArrayString = Util.remapProperties(children).toString();
+            return jsonArrayString.substring(1, jsonArrayString.length() - 1);
         }
     }
 

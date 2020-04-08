@@ -54,7 +54,7 @@ class AvoNetworkCallsHandler {
 
     Map<String, Object> bodyForEventSchemaCall(String eventName,
                                                Map<String, AvoEventSchemaType> schema) {
-        String properties = Util.remapProperties(schema);
+        JSONArray properties = Util.remapProperties(schema);
 
         Map<String, Object> eventSchemaBody = createBaseCallBody();
         eventSchemaBody.put("type", "event");
@@ -195,9 +195,7 @@ class AvoNetworkCallsHandler {
             JSONObject eventJson = new JSONObject(event);
             body.put(eventJson);
         }
-        String bodyString = body.toString().replace("\\\"", "\"")
-                .replace("\\\\", "").replace("\"[{", "[{")
-                .replace("}]\"", "}]");
+        String bodyString = body.toString();
 
         @SuppressWarnings("CharsetObjectCanBeUsed")
         byte[] bodyBytes = bodyString.getBytes("UTF-8");

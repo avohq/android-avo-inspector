@@ -21,8 +21,8 @@ class Util {
         return ISO8601UTC.format(new Date());
     }
 
-    static String remapProperties(Map<String, AvoEventSchemaType> originalProperties) {
-        List<Map<String, String>> properties = new ArrayList<>();
+    static JSONArray remapProperties(Map<String, AvoEventSchemaType> originalProperties) {
+        List<Map<String, Object>> properties = new ArrayList<>();
 
         for (String propKey : originalProperties.keySet()) {
             AvoEventSchemaType propValue = originalProperties.get(propKey);
@@ -30,7 +30,7 @@ class Util {
                 continue;
             }
 
-            Map<String, String> prop = new HashMap<>();
+            Map<String, Object> prop = new HashMap<>();
             prop.put("propertyName", propKey);
             if (propValue instanceof AvoEventSchemaType.AvoObject) {
                 prop.put("propertyType", "object");
@@ -41,6 +41,6 @@ class Util {
             properties.add(prop);
         }
 
-        return new JSONArray(properties).toString().replace("\\\"", "\"");
+        return new JSONArray(properties);
     }
 }

@@ -78,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
                 put("nested3", new HashMap<String, Object>() {{
                     put("nestedNested0", "str");
                     put("nestedNested1", 2.3);
+                    put("2xnested", new HashMap<String, Object>() {{
+                        put("nestedNested0", "str");
+                        put("nestedNested1", 2.3);
+                    }});
                 }});
             }};
         }
@@ -90,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
                 add(new HashMap<String, Object>() {{
                     put("nestedNested0", "str");
                     put("nestedNested1", 2.3);
+                    put("2xnested", new HashMap<String, Object>() {{
+                        put("nestedNested0", "str");
+                        put("nestedNested1", 2.3);
+                    }});
                 }});
             }};
         }

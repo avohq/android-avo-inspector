@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="event name"
-        android:text="Test Event"
+        android:text="Android Test Event"
         android:gravity="center_horizontal"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
