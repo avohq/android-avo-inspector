@@ -1,7 +1,7 @@
 package app.avo.inspector;
 
 import android.app.Application;
-import android.content.Context;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -13,10 +13,10 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ListExtractionTests {
@@ -52,12 +53,14 @@ public class ListExtractionTests {
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
+        when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
 
         sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
     }
 
     @Test
-    public void canExtractJSONArrayOfInts() {
+    public void canExtractJSONArrayOfIntsAndStrings() {
         JSONObject testJsonObj = new JSONObject();
         try {
             JSONArray items = new JSONArray();
@@ -73,6 +76,8 @@ public class ListExtractionTests {
             items.put(sh);
             items.put(new Byte("8"));
             items.put(bt);
+            items.put("Str");
+            items.put(new Character('b'));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -85,6 +90,7 @@ public class ListExtractionTests {
             AvoEventSchemaType value = schema.get(key);
             AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
             expected.subtypes.add(new AvoEventSchemaType.Int());
+            expected.subtypes.add(new AvoEventSchemaType.String());
             assertEquals(expected, value);
         }
     }
@@ -122,6 +128,156 @@ public class ListExtractionTests {
             AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
             expected.subtypes.add(new AvoEventSchemaType.Int());
             expected.subtypes.add(new AvoEventSchemaType.String());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfInts() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            int[] items = new int[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = new Integer(3);
+            items[1] = (short)1;
+            items[2] = 5;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.Int());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfStrings() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            String[] items = new String[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = "3";
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.String());
+            expected.subtypes.add(new AvoEventSchemaType.Null());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfFloats() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            Double[] items = new Double[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = 3.0;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.Float());
+            expected.subtypes.add(new AvoEventSchemaType.Null());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfBooleans() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            boolean[] items = new boolean[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.Boolean());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfLists() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            List[] items = new List[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = new ArrayList();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>()));
+            expected.subtypes.add(new AvoEventSchemaType.Null());
+            assertEquals(expected, value);
+        }
+    }
+
+    @Test
+    public void canExtractArrayOfObjects() {
+        JSONObject testJsonObj = new JSONObject();
+        try {
+            Map[] items = new Map[3];
+            testJsonObj.put("array_key", items);
+
+            items[0] = new HashMap();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Map<String, AvoEventSchemaType> schema = sut.extractSchema(testJsonObj);
+
+        assertEquals(testJsonObj.length(), schema.size());
+
+        for (String key: schema.keySet()) {
+            AvoEventSchemaType value = schema.get(key);
+            AvoEventSchemaType.List expected = new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>());
+            expected.subtypes.add(new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>()));
+            expected.subtypes.add(new AvoEventSchemaType.Null());
             assertEquals(expected, value);
         }
     }

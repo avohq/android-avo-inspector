@@ -3,6 +3,7 @@ package app.avo.inspector;
 import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentCallbacks2;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -52,6 +53,8 @@ public class AppVisibilityTests {
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
         when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
         when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
+        when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
+        when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
     }
 
     @Test

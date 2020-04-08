@@ -1,6 +1,7 @@
 package app.avo.inspector;
 
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -41,6 +42,8 @@ public class InitializationTests {
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.getString(eq(AvoInstallationId.cacheKey), anyString())).thenReturn("testInstallationId");
         when(mockSharedPrefs.getString(eq(AvoSessionTracker.sessionIdKey), (String) eq(null))).thenReturn("");
+        when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
+        when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
     }
 
     @Test

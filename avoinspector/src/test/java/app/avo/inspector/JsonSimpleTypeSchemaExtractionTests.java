@@ -1,6 +1,7 @@
 package app.avo.inspector;
 
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -21,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class JsonSimpleTypeSchemaExtractionTests {
@@ -48,6 +50,10 @@ public class JsonSimpleTypeSchemaExtractionTests {
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
+        when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
+        when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
+        when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
 
         sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
     }

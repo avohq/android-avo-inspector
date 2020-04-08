@@ -26,10 +26,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@SuppressWarnings("WeakerAccess")
+import app.avo.androidanalyticsdebugger.DebuggerManager;
+import app.avo.androidanalyticsdebugger.DebuggerMode;
+import app.avo.androidanalyticsdebugger.EventProperty;
+import app.avo.androidanalyticsdebugger.PropertyError;
+
 public class AvoInspector implements Inspector {
 
-    static boolean logsEnabled = false;
+    private static boolean logsEnabled = false;
 
     String apiKey;
     Long appVersion = null;
@@ -43,7 +47,13 @@ public class AvoInspector implements Inspector {
 
     boolean isHidden = true;
 
+    @Nullable DebuggerManager debugger;
+
     public AvoInspector(String apiKey, Application application, AvoInspectorEnv env) {
+        this(apiKey, application, env, null);
+    }
+
+    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
         try {
             PackageManager packageManager = application.getPackageManager();
             PackageInfo pInfo = packageManager.getPackageInfo(application.getPackageName(), 0);
@@ -75,6 +85,13 @@ public class AvoInspector implements Inspector {
             enableLogging(false);
         }
 
+        if (env != AvoInspectorEnv.Prod) {
+            debugger = new DebuggerManager(application);
+            if (rootActivityForVisualInspector != null) {
+                showVisualInspector(rootActivityForVisualInspector, DebuggerMode.bubble);
+            }
+        }
+
         application.registerActivityLifecycleCallbacks(new EmptyActivityLifecycleCallbacks() {
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
@@ -104,8 +121,24 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
+    public void showVisualInspector(Activity rootActivity, DebuggerMode debuggerMode) {
+        if (debugger == null) {
+            debugger = new DebuggerManager(rootActivity.getApplication());
+        }
+        debugger.showDebugger(rootActivity, debuggerMode);
+    }
+
+    @Override
+    public void hideVisualInspector(Activity rootActivity) {
+        if (debugger != null) {
+            debugger.hideDebugger(rootActivity);
+        }
+    }
+
+    @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties) {
         logPreExtract(eventName, eventProperties);
+        showEventInVisualInspector(eventName, null, eventProperties);
 
         Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
 
@@ -115,19 +148,9 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Map<?, ?> eventProperties) {
+    public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties) {
         logPreExtract(eventName, eventProperties);
-
-        Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
-
-        trackSchema(eventName, schema);
-
-        return schema;
-    }
-
-    @Override
-    public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Object eventProperties) {
-        logPreExtract(eventName, eventProperties);
+        showEventInVisualInspector(eventName, eventProperties, null);
 
         Map<String, AvoEventSchemaType> schema = extractSchema(eventProperties, false);
 
@@ -142,9 +165,51 @@ public class AvoInspector implements Inspector {
         }
     }
 
+    private void showEventInVisualInspector(String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
+        List<EventProperty> props = new ArrayList<>();
+        if (mapParams != null) {
+            for (Map.Entry<String, ?> param : mapParams.entrySet()) {
+                String name = param.getKey();
+                Object value = param.getValue();
+                if (name != null) {
+                    props.add(new EventProperty("", name, value != null ? value.toString() : "null"));
+                }
+            }
+        }
+        if (jsonParams != null) {
+            for (Iterator<String> it = jsonParams.keys(); it.hasNext(); ) {
+                String name = it.next();
+                try {
+                    Object value = jsonParams.get(name);
+                    props.add(new EventProperty("", name, value != JSONObject.NULL ? value.toString() : "null"));
+                } catch (JSONException ignored) {
+                }
+            }
+        }
+
+        if (debugger != null) {
+            debugger.publishEvent(System.currentTimeMillis(), "Event: " + eventName, props, new ArrayList<PropertyError>());
+        }
+    }
+
+    private void showSchemaInVisualInspector(String eventName, Map<String, AvoEventSchemaType> schema) {
+        List<EventProperty> props = new ArrayList<>();
+        for (Map.Entry<String, AvoEventSchemaType> param: schema.entrySet()) {
+            String name = param.getKey();
+            AvoEventSchemaType value = param.getValue();
+            if (name != null) {
+                props.add(new EventProperty("", name, value != null ? value.getName() : "null"));
+            }
+        }
+        if (debugger != null) {
+            debugger.publishEvent(System.currentTimeMillis(), "Schema: " + eventName, props, new ArrayList<PropertyError>());
+        }
+    }
+
     @Override
     public void trackSchema(@NonNull String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema) {
         logPostExtract(eventName, eventSchema);
+        showSchemaInVisualInspector(eventName, eventSchema);
 
         sessionTracker.startOrProlongSession(System.currentTimeMillis());
 
@@ -228,98 +293,101 @@ public class AvoInspector implements Inspector {
         if (val == null || val instanceof AvoEventSchemaType.Null || val == JSONObject.NULL) {
             return new AvoEventSchemaType.Null();
         } else {
-            String valTypeName = val.getClass().getName();
+            if (val instanceof List) {
+                Set<AvoEventSchemaType> subtypes = new HashSet<>();
+                List list = (List) val;
+                for (Object v : list) {
+                    subtypes.add(objectToAvoType(v));
+                }
 
-            switch (valTypeName) {
-                case "int":
-                case "java.lang.Integer":
-                case "byte":
-                case "java.lang.Byte":
-                case "long":
-                case "java.lang.Long":
-                case "short":
-                case "java.lang.Short":
-                    return new AvoEventSchemaType.Int();
-                case "boolean":
-                case "java.lang.Boolean":
-                    return new AvoEventSchemaType.Boolean();
-                case "float":
-                case "java.lang.Float":
-                case "double":
-                case "java.lang.Double":
-                    return new AvoEventSchemaType.Float();
-                case "char":
-                case "java.lang.Character":
-                case "java.lang.String":
-                    return new AvoEventSchemaType.String();
-                case "java.util.ArrayList":
-                case "java.util.LinkedList":
-                    Set<AvoEventSchemaType> subtypes = new HashSet<>();
-                    List list = (List) val;
-                    for (Object v : list) {
-                        subtypes.add(objectToAvoType(v));
-                    }
+                return new AvoEventSchemaType.List(subtypes);
+            } else if (val instanceof JSONArray) {
+                Set<AvoEventSchemaType> subItems = new HashSet<>();
+                JSONArray jsonArray = (JSONArray) val;
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    try {
+                        subItems.add(objectToAvoType(jsonArray.get(i)));
+                    } catch (JSONException ignored) { }
+                }
 
-                    return new AvoEventSchemaType.List(subtypes);
-                case "org.json.JSONArray":
-                    Set<AvoEventSchemaType> subitems = new HashSet<>();
-                    JSONArray jsonArray = (JSONArray) val;
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        try {
-                            subitems.add(objectToAvoType(jsonArray.get(i)));
-                        } catch (JSONException ignored) { }
-                    }
+                return new AvoEventSchemaType.List(subItems);
+            } else if (val instanceof Map) {
+                AvoEventSchemaType.AvoObject result = new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>());
 
-                    return new AvoEventSchemaType.List(subitems);
-                case "[Ljava.lang.String;":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.String());
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[Ljava.lang.Integer;":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Int());
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[I":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Int());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[Ljava.lang.Boolean;":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Boolean());
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[Z":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Boolean());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[Ljava.lang.Float;":
-                case "[Ljava.lang.Double;":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Float());
-                    subtypes.add(new AvoEventSchemaType.Null());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "[D":
-                case "[F":
-                    subtypes = new HashSet<>();
-                    subtypes.add(new AvoEventSchemaType.Float());
-                    return new AvoEventSchemaType.List(subtypes);
-                case "java.util.HashMap":
-                    AvoEventSchemaType.AvoObject result = new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>());
+                for (Object childName: ((Map)val).keySet()) {
+                    String childNameString = (String) childName;
 
-                    for (Object childName: ((Map)val).keySet()) {
-                        String childNameString = (String) childName;
+                    AvoEventSchemaType paramType = objectToAvoType(((Map)val).get(childName));
 
-                        AvoEventSchemaType paramType = objectToAvoType(((Map)val).get(childName));
+                    result.children.put(childNameString, paramType);
+                }
 
-                        result.children.put(childNameString, paramType);
-                    }
-
-                    return result;
-                default:
-                    return new AvoEventSchemaType.Unknown();
+                return result;
+            } else if (val instanceof Integer || val instanceof  Byte || val instanceof Long || val instanceof  Short) {
+                return new AvoEventSchemaType.Int();
+            } else if (val instanceof Boolean) {
+                return new AvoEventSchemaType.Boolean();
+            } else if (val instanceof Float || val instanceof  Double) {
+                return new AvoEventSchemaType.Float();
+            } else if (val instanceof String || val instanceof  Character) {
+                return new AvoEventSchemaType.String();
+            } else {
+                return arrayOrUnknownToAvoType(val);
             }
+        }
+    }
+
+    private AvoEventSchemaType arrayOrUnknownToAvoType(@NonNull Object val) {
+        String className = val.getClass().getName();
+        switch (className) {
+            case "[Ljava.lang.String;":
+                Set<AvoEventSchemaType> subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.String());
+                subtypes.add(new AvoEventSchemaType.Null());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[Ljava.lang.Integer;":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Int());
+                subtypes.add(new AvoEventSchemaType.Null());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[I":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Int());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[Ljava.lang.Boolean;":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Boolean());
+                subtypes.add(new AvoEventSchemaType.Null());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[Z":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Boolean());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[Ljava.lang.Float;":
+            case "[Ljava.lang.Double;":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Float());
+                subtypes.add(new AvoEventSchemaType.Null());
+                return new AvoEventSchemaType.List(subtypes);
+            case "[D":
+            case "[F":
+                subtypes = new HashSet<>();
+                subtypes.add(new AvoEventSchemaType.Float());
+                return new AvoEventSchemaType.List(subtypes);
+            default:
+                if (className.startsWith("[L") && className.contains("List")) {
+                    subtypes = new HashSet<>();
+                    subtypes.add(new AvoEventSchemaType.List(new HashSet<AvoEventSchemaType>()));
+                    subtypes.add(new AvoEventSchemaType.Null());
+                    return new AvoEventSchemaType.List(subtypes);
+                } else if (className.startsWith("[L")) {
+                    subtypes = new HashSet<>();
+                    subtypes.add(new AvoEventSchemaType.AvoObject(new HashMap<String, AvoEventSchemaType>()));
+                    subtypes.add(new AvoEventSchemaType.Null());
+                    return new AvoEventSchemaType.List(subtypes);
+                } else {
+                    return new AvoEventSchemaType.Unknown();
+                }
         }
     }
 
