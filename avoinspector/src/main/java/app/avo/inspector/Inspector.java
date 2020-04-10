@@ -14,7 +14,7 @@ import app.avo.androidanalyticsdebugger.DebuggerMode;
 @SuppressWarnings("UnusedReturnValue")
 public interface Inspector {
 
-    void showVisualInspector(Activity rootActivity, DebuggerMode debuggerMode);
+    void showVisualInspector(Activity rootActivity, DebuggerMode visualInspectorMode);
 
     void hideVisualInspector(Activity rootActivity);
 
