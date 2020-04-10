@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import app.avo.androidanalyticsdebugger.DebuggerManager;
+import app.avo.androidanalyticsdebugger.DebuggerMode;
 import app.avo.avoinspectorexample.databinding.ActivityMainBinding;
+import app.avo.inspector.AvoEventSchemaType;
 import app.avo.inspector.AvoInspector;
 import app.avo.inspector.AvoInspectorEnv;
 
@@ -26,8 +29,37 @@ public class MainActivity extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-        final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
+        final AvoInspector avoInspector = new AvoInspector("MY_API_KEY",
                 getApplication(), AvoInspectorEnv.Dev, this);
+
+        AvoInspector.enableLogging(true);
+
+        avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
+            put("String Prop", "Prop Value");
+            put("Float Name", 1.0);
+            put("Bool Name", true);
+        }});
+
+        avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
+            put("String Prop", new AvoEventSchemaType.AvoString());
+            put("Float Name", new AvoEventSchemaType.AvoFloat());
+            put("Bool Name", new AvoEventSchemaType.AvoBoolean());
+        }});
+
+        Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(new HashMap<String, Object>() {{
+            put("String Prop", "Prop Value");
+            put("Float Name", 1.0);
+            put("Bool Name", true);
+        }});
+
+        avoInspector.showVisualInspector(this, DebuggerMode.bubble);
+
+        avoInspector.hideVisualInspector(this);
+
+        DebuggerManager visualInspector = avoInspector.getVisualInspector();
+
+        AvoInspector.setBatchSize(15);
+        AvoInspector.setBatchFlushSeconds(10);
 
         binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
             @Override

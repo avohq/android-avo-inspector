@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class AvoEventSchemaType {
 
     @NonNull abstract String getName();
@@ -30,7 +31,7 @@ public abstract class AvoEventSchemaType {
         return getName();
     }
 
-    static class AvoInt extends AvoEventSchemaType {
+    public static class AvoInt extends AvoEventSchemaType {
         @NonNull
         @Override
         String getName() {
@@ -38,7 +39,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoFloat extends AvoEventSchemaType {
+    public static class AvoFloat extends AvoEventSchemaType {
         @NonNull
         @Override
         String getName() {
@@ -46,7 +47,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoBoolean extends AvoEventSchemaType {
+    public static class AvoBoolean extends AvoEventSchemaType {
         @NonNull
         @Override
         String getName() {
@@ -54,7 +55,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoString extends AvoEventSchemaType {
+    public static class AvoString extends AvoEventSchemaType {
         @NonNull
         @Override
         String getName() {
@@ -62,7 +63,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoNull extends AvoEventSchemaType {
+    public static class AvoNull extends AvoEventSchemaType {
         @NonNull
         @Override
         String getName() {
@@ -70,7 +71,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoList extends AvoEventSchemaType {
+    public static class AvoList extends AvoEventSchemaType {
         @NonNull Set<AvoEventSchemaType> subtypes;
 
         AvoList(@NonNull Set<AvoEventSchemaType> subtypes) {
@@ -96,7 +97,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoObject extends AvoEventSchemaType {
+    public static class AvoObject extends AvoEventSchemaType {
 
         @NonNull Map<String, AvoEventSchemaType> children;
 
@@ -112,7 +113,7 @@ public abstract class AvoEventSchemaType {
         }
     }
 
-    static class AvoUnknownType extends AvoEventSchemaType {
+    public static class AvoUnknownType extends AvoEventSchemaType {
 
         @NonNull
         @Override

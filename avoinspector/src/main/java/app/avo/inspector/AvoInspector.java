@@ -122,11 +122,11 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public void showVisualInspector(Activity rootActivity, DebuggerMode debuggerMode) {
+    public void showVisualInspector(Activity rootActivity, DebuggerMode visualInspectorMode) {
         if (debugger == null) {
             debugger = new DebuggerManager(rootActivity.getApplication());
         }
-        debugger.showDebugger(rootActivity, debuggerMode);
+        debugger.showDebugger(rootActivity, visualInspectorMode);
     }
 
     @Override
@@ -429,7 +429,7 @@ public class AvoInspector implements Inspector {
 
     @SuppressWarnings("unused")
     @Nullable
-    public DebuggerManager getDebugger() {
+    public DebuggerManager getVisualInspector() {
         return debugger;
     }
 
@@ -462,5 +462,4 @@ public class AvoInspector implements Inspector {
     static public void setBatchFlushSeconds(int newBatchFlushSeconds) {
         AvoBatcher.batchFlushSeconds = newBatchFlushSeconds;
     }
-
 }
