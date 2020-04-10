@@ -208,7 +208,11 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public void trackSchema(@NonNull String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema) {
+    public void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema) {
+        if (eventSchema == null) {
+            eventSchema = new HashMap<>();
+        }
+
         logPostExtract(eventName, eventSchema);
         showSchemaInVisualInspector(eventName, eventSchema);
 
