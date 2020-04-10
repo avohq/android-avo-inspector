@@ -3,9 +3,15 @@ package app.avo.avoinspectorexample
 import android.app.Activity
 import android.os.Bundle
 import app.avo.androidanalyticsdebugger.DebuggerMode
+import app.avo.inspector.AvoEventSchemaType
 import app.avo.inspector.AvoEventSchemaType.*
 import app.avo.inspector.AvoInspector
 import app.avo.inspector.AvoInspectorEnv
+import com.segment.analytics.Analytics
+import com.segment.analytics.Middleware
+import com.segment.analytics.integrations.BasePayload
+import com.segment.analytics.integrations.TrackPayload
+
 
 @SuppressWarnings("ALL")
 class KotlinActivity : Activity() {
@@ -40,5 +46,25 @@ class KotlinActivity : Activity() {
 
         AvoInspector.setBatchSize(15)
         AvoInspector.setBatchFlushSeconds(10)
+
+        val eventSchema = mutableMapOf<String, AvoEventSchemaType>().apply {
+            put("userId", AvoInt())
+            put("emailAddress", AvoString())
+            put("key", AvoString())
+        }
+
+        val avoInspectorMiddleware = Middleware { chain ->
+            val payload = chain.payload()
+            if (payload.type() == BasePayload.Type.track) {
+                val trackPayload = payload as TrackPayload
+                avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties())
+            }
+            chain.proceed(payload)
+        }
+        val analytics = Analytics.Builder(applicationContext, "SEGMENT_ANALYTICS_WRITE_KEY")
+                .middleware(avoInspectorMiddleware)
+                .build()
     }
+
+
 }

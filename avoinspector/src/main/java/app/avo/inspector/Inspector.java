@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.json.JSONObject;
 
@@ -18,11 +19,11 @@ public interface Inspector {
 
     void hideVisualInspector(Activity rootActivity);
 
-    Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, JSONObject eventProperties);
+    @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties);
 
-    Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, Map<String, ?> eventProperties);
+    @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties);
 
-    void trackSchema(@NonNull String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema);
+    void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema);
 
-    Map<String, AvoEventSchemaType> extractSchema(Object eventProperties);
+    @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties);
 }

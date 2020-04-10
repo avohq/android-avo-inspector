@@ -5,6 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.segment.analytics.Analytics;
+import com.segment.analytics.Middleware;
+import com.segment.analytics.Properties;
+import com.segment.analytics.integrations.BasePayload;
+import com.segment.analytics.integrations.TrackPayload;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +40,36 @@ public class MainActivity extends AppCompatActivity {
 
         AvoInspector.enableLogging(true);
 
+        Middleware avoInspectorMiddleware = new Middleware() {
+            @Override
+            public void intercept(Chain chain) {
+
+                BasePayload payload = chain.payload();
+
+                if (payload.type() == BasePayload.Type.track) {
+                    TrackPayload trackPayload = (TrackPayload) payload;
+                    avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties());
+                }
+
+                chain.proceed(payload);
+            }
+        };
+        Analytics analytics = new Analytics.Builder(getApplicationContext(), "SEGMENT_ANALYTICS_WRITE_KEY")
+                .middleware(avoInspectorMiddleware)
+                .build();
+
+        analytics.track("Event", new Properties().putValue("str", "k").putValue("float", 2.0));
+
         avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
             put("String Prop", "Prop Value");
             put("Float Name", 1.0);
             put("Bool Name", true);
         }});
+
+        Map<String, AvoEventSchemaType> eventSchema = new HashMap<>();
+        eventSchema.put("userId", new AvoEventSchemaType.AvoInt());
+        eventSchema.put("emailAddress", new AvoEventSchemaType.AvoString());
+        eventSchema.put("key", new AvoEventSchemaType.AvoString());
 
         avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
             put("String Prop", new AvoEventSchemaType.AvoString());
