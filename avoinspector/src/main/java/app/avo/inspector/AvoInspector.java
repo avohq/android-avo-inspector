@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -173,7 +174,24 @@ public class AvoInspector implements Inspector {
                 String name = param.getKey();
                 Object value = param.getValue();
                 if (name != null) {
-                    props.add(new EventProperty("", name, value != null ? value.toString() : "null"));
+                    String valueDescription;
+                    if (value == null) {
+                        valueDescription = "null";
+                    } else if (value instanceof List) {
+                        valueDescription = new JSONArray((List) value).toString();
+                    } else if (value instanceof Map) {
+                        try {
+                            valueDescription = new JSONObject((Map)value).toString(1)
+                                    .replace("\n", "")
+                                    .replace("\\", "");
+                        } catch (JSONException ex) {
+                            valueDescription = new JSONObject((Map)value).toString()
+                                    .replace("\\", "");
+                        }
+                    } else {
+                        valueDescription = value.toString();
+                    }
+                    props.add(new EventProperty("", name, valueDescription));
                 }
             }
         }
@@ -199,7 +217,7 @@ public class AvoInspector implements Inspector {
             String name = param.getKey();
             AvoEventSchemaType value = param.getValue();
             if (name != null) {
-                props.add(new EventProperty("", name, value != null ? value.getName() : "null"));
+                props.add(new EventProperty("", name, value != null ? value.getReadableName() : "null"));
             }
         }
         if (debugger != null) {
@@ -228,7 +246,7 @@ public class AvoInspector implements Inspector {
             for (String key: eventSchema.keySet()) {
                 AvoEventSchemaType value = eventSchema.get(key);
                 if (value != null) {
-                    String entry = "\t\"" + key + "\": \"" + value.getName() + "\";\n";
+                    String entry = "\t\"" + key + "\": \"" + value.getReportedName() + "\";\n";
                     schemaString.append(entry);
                 }
             }
@@ -431,7 +449,7 @@ public class AvoInspector implements Inspector {
         return result;
     }
 
-    @SuppressWarnings("unused")
+    @Override
     @Nullable
     public DebuggerManager getVisualInspector() {
         return debugger;

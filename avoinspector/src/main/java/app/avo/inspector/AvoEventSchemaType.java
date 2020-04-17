@@ -9,12 +9,16 @@ import java.util.Set;
 @SuppressWarnings("WeakerAccess")
 public abstract class AvoEventSchemaType {
 
-    @NonNull abstract String getName();
+    @NonNull abstract String getReportedName();
+
+    @NonNull protected String getReadableName() {
+        return getReportedName();
+    }
 
     @Override
     public boolean equals(@Nullable Object obj) {
         if (obj instanceof AvoEventSchemaType) {
-            return getName().equals(((AvoEventSchemaType) obj).getName());
+            return getReportedName().equals(((AvoEventSchemaType) obj).getReportedName());
         }
 
         return super.equals(obj);
@@ -22,19 +26,19 @@ public abstract class AvoEventSchemaType {
 
     @Override
     public int hashCode() {
-        return getName().hashCode();
+        return getReportedName().hashCode();
     }
 
     @NonNull
     @Override
     public String toString() {
-        return getName();
+        return getReportedName();
     }
 
     public static class AvoInt extends AvoEventSchemaType {
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "int";
         }
     }
@@ -42,7 +46,7 @@ public abstract class AvoEventSchemaType {
     public static class AvoFloat extends AvoEventSchemaType {
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "float";
         }
     }
@@ -50,7 +54,7 @@ public abstract class AvoEventSchemaType {
     public static class AvoBoolean extends AvoEventSchemaType {
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "boolean";
         }
     }
@@ -58,7 +62,7 @@ public abstract class AvoEventSchemaType {
     public static class AvoString extends AvoEventSchemaType {
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "string";
         }
     }
@@ -66,7 +70,7 @@ public abstract class AvoEventSchemaType {
     public static class AvoNull extends AvoEventSchemaType {
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "null";
         }
     }
@@ -80,7 +84,7 @@ public abstract class AvoEventSchemaType {
 
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             StringBuilder types = new StringBuilder();
 
             boolean first = true;
@@ -89,7 +93,25 @@ public abstract class AvoEventSchemaType {
                     types.append("|");
                 }
 
-                types.append(subtype.getName());
+                types.append(subtype.getReportedName());
+                first = false;
+            }
+
+            return "list<" + types + ">";
+        }
+
+        @NonNull
+        @Override
+        protected String getReadableName() {
+            StringBuilder types = new StringBuilder();
+
+            boolean first = true;
+            for (AvoEventSchemaType subtype: subtypes) {
+                if (!first) {
+                    types.append("|");
+                }
+
+                types.append(subtype.getReadableName());
                 first = false;
             }
 
@@ -107,9 +129,16 @@ public abstract class AvoEventSchemaType {
 
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             String jsonArrayString = Util.remapProperties(children).toString();
             return jsonArrayString.substring(1, jsonArrayString.length() - 1);
+        }
+
+        @NonNull
+        @Override
+        protected String getReadableName() {
+            String jsonArrayString = Util.readableJsonProperties(children);
+            return jsonArrayString;
         }
     }
 
@@ -117,7 +146,7 @@ public abstract class AvoEventSchemaType {
 
         @NonNull
         @Override
-        String getName() {
+        String getReportedName() {
             return "unknown";
         }
     }

@@ -1,6 +1,8 @@
 package app.avo.inspector;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,11 +38,28 @@ class Util {
                 prop.put("propertyType", "object");
                 prop.put("children", remapProperties(((AvoEventSchemaType.AvoObject) propValue).children));
             } else {
-                prop.put("propertyType", propValue.getName());
+                prop.put("propertyType", propValue.getReportedName());
             }
             properties.add(prop);
         }
 
         return new JSONArray(properties);
+    }
+
+    static String readableJsonProperties(Map<String, AvoEventSchemaType> originalProperties) {
+        Map<String, String> propsDescription = new HashMap<>();
+
+        for (String propName: originalProperties.keySet()) {
+            AvoEventSchemaType propType = originalProperties.get(propName);
+            String propValue = propType != null ? propType.getReadableName() : "null";
+            propsDescription.put(propName, propValue);
+        }
+
+        try {
+            return new JSONObject(propsDescription).toString(1)
+                    .replace("\n", "").replace("\\", "");
+        } catch (JSONException ex) {
+            return new JSONObject(propsDescription).toString().replace("\\", "");
+        }
     }
 }

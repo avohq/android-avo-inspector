@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.Map;
 
+import app.avo.androidanalyticsdebugger.DebuggerManager;
 import app.avo.androidanalyticsdebugger.DebuggerMode;
 
 @SuppressWarnings("UnusedReturnValue")
@@ -26,4 +27,7 @@ public interface Inspector {
     void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema);
 
     @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties);
+
+    @Nullable
+    DebuggerManager getVisualInspector();
 }
