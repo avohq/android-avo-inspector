@@ -1,6 +1,7 @@
 package app.avo.avoinspectorexample
 
 import android.app.Activity
+import android.app.Application
 import android.os.Bundle
 import app.avo.androidanalyticsdebugger.DebuggerMode
 import app.avo.inspector.AvoEventSchemaType
@@ -53,6 +54,7 @@ class KotlinActivity : Activity() {
             put("key", AvoString())
         }
 
+        /*** Segment middleware code snippet
         val avoInspectorMiddleware = Middleware { chain ->
             val payload = chain.payload()
             if (payload.type() == BasePayload.Type.track) {
@@ -64,7 +66,7 @@ class KotlinActivity : Activity() {
         val analytics = Analytics.Builder(applicationContext, "SEGMENT_ANALYTICS_WRITE_KEY")
                 .middleware(avoInspectorMiddleware)
                 .build()
+        ***/
     }
-
 
 }

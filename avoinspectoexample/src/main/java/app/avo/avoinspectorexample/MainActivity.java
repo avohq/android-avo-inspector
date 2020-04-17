@@ -7,7 +7,6 @@ import android.view.View;
 
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Middleware;
-import com.segment.analytics.Properties;
 import com.segment.analytics.integrations.BasePayload;
 import com.segment.analytics.integrations.TrackPayload;
 
@@ -35,64 +34,10 @@ public class MainActivity extends AppCompatActivity {
         View view = binding.getRoot();
         setContentView(view);
 
-        final AvoInspector avoInspector = new AvoInspector("MY_API_KEY",
+        final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
                 getApplication(), AvoInspectorEnv.Dev, this);
 
-        AvoInspector.enableLogging(true);
-
-        Middleware avoInspectorMiddleware = new Middleware() {
-            @Override
-            public void intercept(Chain chain) {
-
-                BasePayload payload = chain.payload();
-
-                if (payload.type() == BasePayload.Type.track) {
-                    TrackPayload trackPayload = (TrackPayload) payload;
-                    avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties());
-                }
-
-                chain.proceed(payload);
-            }
-        };
-        Analytics analytics = new Analytics.Builder(getApplicationContext(), "SEGMENT_ANALYTICS_WRITE_KEY")
-                .middleware(avoInspectorMiddleware)
-                .build();
-
-        analytics.track("Event", new Properties().putValue("str", "k").putValue("float", 2.0));
-
-        avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
-            put("String Prop", "Prop Value");
-            put("Float Name", 1.0);
-            put("Bool Name", true);
-        }});
-
-        Map<String, AvoEventSchemaType> eventSchema = new HashMap<>();
-        eventSchema.put("userId", new AvoEventSchemaType.AvoInt());
-        eventSchema.put("emailAddress", new AvoEventSchemaType.AvoString());
-        eventSchema.put("key", new AvoEventSchemaType.AvoString());
-
-        avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
-            put("String Prop", new AvoEventSchemaType.AvoString());
-            put("Float Name", new AvoEventSchemaType.AvoFloat());
-            put("Bool Name", new AvoEventSchemaType.AvoBoolean());
-        }});
-
-        Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(new HashMap<String, Object>() {{
-            put("String Prop", "Prop Value");
-            put("Float Name", 1.0);
-            put("Bool Name", true);
-        }});
-
-        avoInspector.showVisualInspector(this, DebuggerMode.bubble);
-
-        avoInspector.hideVisualInspector(this);
-
-        DebuggerManager visualInspector = avoInspector.getVisualInspector();
-
-        AvoInspector.setBatchSize(15);
-        AvoInspector.setBatchFlushSeconds(10);
-
-        binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
+	    binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String eventName = binding.eventNameInput.getText().toString();
@@ -128,7 +73,61 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private Object parseValue(String value) {
+	private void exampleUsage(final AvoInspector avoInspector) {
+		AvoInspector.enableLogging(true);
+
+		Middleware avoInspectorMiddleware = new Middleware() {
+		    @Override
+		    public void intercept(Chain chain) {
+
+		        BasePayload payload = chain.payload();
+
+		        if (payload.type() == BasePayload.Type.track) {
+		            TrackPayload trackPayload = (TrackPayload) payload;
+		            avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties());
+		        }
+
+		        chain.proceed(payload);
+		    }
+		};
+		Analytics analytics = new Analytics.Builder(getApplicationContext(), "SEGMENT_ANALYTICS_WRITE_KEY")
+		        .middleware(avoInspectorMiddleware)
+		        .build();
+
+		avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
+		    put("String Prop", "Prop Value");
+		    put("Float Name", 1.0);
+		    put("Bool Name", true);
+		}});
+
+		Map<String, AvoEventSchemaType> eventSchema = new HashMap<>();
+		eventSchema.put("userId", new AvoEventSchemaType.AvoInt());
+		eventSchema.put("emailAddress", new AvoEventSchemaType.AvoString());
+		eventSchema.put("key", new AvoEventSchemaType.AvoString());
+
+		avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
+		    put("String Prop", new AvoEventSchemaType.AvoString());
+		    put("Float Name", new AvoEventSchemaType.AvoFloat());
+		    put("Bool Name", new AvoEventSchemaType.AvoBoolean());
+		}});
+
+		Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(new HashMap<String, Object>() {{
+		    put("String Prop", "Prop Value");
+		    put("Float Name", 1.0);
+		    put("Bool Name", true);
+		}});
+
+		avoInspector.hideVisualInspector(this);
+
+		avoInspector.showVisualInspector(this, DebuggerMode.bubble);
+
+		DebuggerManager visualInspector = avoInspector.getVisualInspector();
+
+		AvoInspector.setBatchSize(15);
+		AvoInspector.setBatchFlushSeconds(10);
+	}
+
+	private Object parseValue(String value) {
         if (value == null || value.equals("")) {
             return null;
         }
