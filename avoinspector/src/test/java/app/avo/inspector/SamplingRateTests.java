@@ -69,7 +69,7 @@ public class SamplingRateTests {
                     });
         }
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         verify(sut.callbackHandler, times(10)).post(any(Runnable.class));
     }
 }
