@@ -106,8 +106,8 @@ class AvoBatcher {
         checkIfBatchNeedsToBeSent();
     }
 
-    void batchTrackEventSchema(String eventName, Map<String, AvoEventSchemaType> schema) {
-        events.add(networkCallsHandler.bodyForEventSchemaCall(eventName, schema));
+    void batchTrackEventSchema(String eventName, Map<String, AvoEventSchemaType> schema, @Nullable String eventId, @Nullable String eventHash) {
+        events.add(networkCallsHandler.bodyForEventSchemaCall(eventName, schema, eventId, eventHash));
 
         checkIfBatchNeedsToBeSent();
     }

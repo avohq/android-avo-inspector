@@ -21,6 +21,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -86,6 +87,19 @@ public class BatchingTests {
         activityLifecycleCallbackCaptor.getValue().onActivityStarted(mock(Activity.class));
 
         verify(mockBatcher, times(1)).enterForeground();
+    }
+
+    @Test
+    public void inspectorCallsAvoBatcherWithEventIdAndHash() {
+        Map<String, Map<String, Number>> testMap = new ConcurrentHashMap<>();
+        Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
+
+        AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
+        avoInspector.avoBatcher = mockBatcher;
+
+        avoInspector.avoFunctionTrackSchemaFromEvent("Test", testMap, "eventId", "eventHash");
+
+        verify(mockBatcher).batchTrackEventSchema("Test", testSchema, "eventId", "eventHash");
     }
 
     @Test
@@ -335,7 +349,7 @@ public class BatchingTests {
 
         // When
         sut.batchTrackEventSchema("Test Event",
-                new HashMap<String, AvoEventSchemaType>());
+                new HashMap<String, AvoEventSchemaType>(), null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -343,7 +357,7 @@ public class BatchingTests {
         // When
         for (int i = 0; i < AvoBatcher.batchSize - 1; i++) {
             sut.batchTrackEventSchema("Test Event",
-                    new HashMap<String, AvoEventSchemaType>());
+                    new HashMap<String, AvoEventSchemaType>(), null, null);
         }
 
         // Then
@@ -396,5 +410,35 @@ public class BatchingTests {
 
         // Then
         verify(sut.mainHandler, times(2)).post(any(Runnable.class));
+    }
+
+    @Test
+    public void parsesEventIdAndEventHash() throws InterruptedException {
+        ArgumentCaptor<Runnable> runnableCaptor
+                = ArgumentCaptor.forClass(Runnable.class);
+
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
+
+        // When
+        sut.batchTrackEventSchema("Test Event",
+                new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash");
+
+        // Then
+        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash");
+    }
+
+    @Test
+    public void parsesEmptyEventIdAndEventHash() throws InterruptedException {
+        ArgumentCaptor<Runnable> runnableCaptor
+                = ArgumentCaptor.forClass(Runnable.class);
+
+        AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
+
+        // When
+        sut.batchTrackEventSchema("Test Event",
+                new HashMap<String, AvoEventSchemaType>(), null, null);
+
+        // Then
+        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
     }
 }

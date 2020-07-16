@@ -107,8 +107,24 @@ public class InitializationTests {
     }
 
     @Test
+    public void internalInitsWithProdEnv() {
+        sut = new AvoInspector("apiKey", mockApplication, "Prod", null);
+
+        assertEquals("prod", sut.env);
+        assertEquals("prod", sut.avoBatcher.networkCallsHandler.envName);
+    }
+
+    @Test
     public void initsWithDevEnv() {
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
+
+        assertEquals("dev", sut.env);
+        assertEquals("dev", sut.avoBatcher.networkCallsHandler.envName);
+    }
+
+    @Test
+    public void internalInitsWithDevEnv() {
+        sut = new AvoInspector("apiKey", mockApplication, "dev", null);
 
         assertEquals("dev", sut.env);
         assertEquals("dev", sut.avoBatcher.networkCallsHandler.envName);
@@ -120,5 +136,21 @@ public class InitializationTests {
 
         assertEquals("staging", sut.env);
         assertEquals("staging", sut.avoBatcher.networkCallsHandler.envName);
+    }
+
+    @Test
+    public void internalInitsWithStagingEnv() {
+        sut = new AvoInspector("apiKey", mockApplication, "staging", null);
+
+        assertEquals("staging", sut.env);
+        assertEquals("staging", sut.avoBatcher.networkCallsHandler.envName);
+    }
+
+    @Test
+    public void internalInitsAsDevWithUnknownEnv() {
+        sut = new AvoInspector("apiKey", mockApplication, "whatever", null);
+
+        assertEquals("dev", sut.env);
+        assertEquals("dev", sut.avoBatcher.networkCallsHandler.envName);
     }
 }

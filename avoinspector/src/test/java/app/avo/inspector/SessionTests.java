@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;
@@ -126,22 +125,6 @@ public class SessionTests {
         Assert.assertTrue(timestampCaptor.getValue() <= System.currentTimeMillis());
     }
 
-   /* @Test
-    public void startSessionCalledOnEventSchemaTrackFromEventWithObject() {
-        ArgumentCaptor<Long> timestampCaptor
-                = ArgumentCaptor.forClass(Long.class);
-
-        sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
-        sut.sessionTracker = mockSessionTracker;
-
-        sut.trackSchemaFromEvent("Map name", new Object());
-
-        verify(mockSessionTracker).startOrProlongSession(timestampCaptor.capture());
-
-        Assert.assertTrue(timestampCaptor.getValue() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(1));
-        Assert.assertTrue(timestampCaptor.getValue() <= System.currentTimeMillis());
-    }
-*/
     @Test
     public void readsLastSessionTimestampFromPrefs() {
         when(mockSharedPrefs.getLong(anyString(), eq(-1L))).thenReturn(999L);
