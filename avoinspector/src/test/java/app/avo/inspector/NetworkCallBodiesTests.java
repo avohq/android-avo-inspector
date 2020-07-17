@@ -54,7 +54,7 @@ public class NetworkCallBodiesTests {
         Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
                 testSchema, "event Id", "event Hash");
 
-        Assert.assertEquals(true, body.get("function"));
+        Assert.assertEquals(true, body.get("avoFunction"));
         Assert.assertEquals("event Id", body.get("eventId"));
         Assert.assertEquals("event Hash", body.get("eventHash"));
     }
@@ -109,7 +109,7 @@ public class NetworkCallBodiesTests {
         Assert.assertEquals("testInstallationId", body.get("trackingId"));
         Assert.assertEquals(1.0, body.get("samplingRate"));
         Assert.assertEquals("testSessionId", body.get("sessionId"));
-        Assert.assertEquals(false, body.get("function"));
+        Assert.assertEquals(false, body.get("avoFunction"));
         Assert.assertNull(body.get("eventId"));
         Assert.assertNull(body.get("eventHash"));
     }

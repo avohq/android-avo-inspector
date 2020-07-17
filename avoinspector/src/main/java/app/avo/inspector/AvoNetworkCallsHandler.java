@@ -60,11 +60,11 @@ class AvoNetworkCallsHandler {
         Map<String, Object> eventSchemaBody = createBaseCallBody();
 
         if (eventId != null) {
-            eventSchemaBody.put("function", true);
+            eventSchemaBody.put("avoFunction", true);
             eventSchemaBody.put("eventId", eventId);
             eventSchemaBody.put("eventHash", eventHash);
         } else {
-            eventSchemaBody.put("function", false);
+            eventSchemaBody.put("avoFunction", false);
         }
 
         eventSchemaBody.put("type", "event");
