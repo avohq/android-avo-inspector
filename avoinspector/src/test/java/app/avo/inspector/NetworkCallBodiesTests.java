@@ -39,6 +39,27 @@ public class NetworkCallBodiesTests {
     }
 
     @Test
+    public void testEventSchemaBodyFromAvoFunction() throws JSONException {
+        AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
+                "testApiKey", "testEnvName", "testAppName",
+                "testAppVersion", "testLibVersion",
+                "testInstallationId"
+        );
+
+        sut.samplingRate = 1;
+        AvoSessionTracker.sessionId = "testSessionId";
+
+        Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
+
+        Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
+                testSchema, "event Id", "event Hash");
+
+        Assert.assertEquals(true, body.get("avoFunction"));
+        Assert.assertEquals("event Id", body.get("eventId"));
+        Assert.assertEquals("event Hash", body.get("eventHash"));
+    }
+
+    @Test
     public void testEventSchemaBodyWithAvoObject() throws JSONException {
 
         AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
@@ -72,7 +93,7 @@ public class NetworkCallBodiesTests {
         }}));
 
         Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
-                testSchema);
+                testSchema, null, null);
 
         Assert.assertEquals("event", body.get("type"));
         Assert.assertEquals("[{\"propertyName\":\"nested\",\"children\":[{\"propertyName\":\"v6\",\"children\":[{\"propertyName\":\"a\",\"propertyType\":\"int\"}],\"propertyType\":\"object\"},{\"propertyName\":\"v7\",\"propertyType\":\"list<{\\\"propertyName\\\":\\\"key\\\",\\\"propertyType\\\":\\\"float\\\"}|int>\"},{\"propertyName\":\"v0\",\"propertyType\":\"int\"},{\"propertyName\":\"v1\",\"propertyType\":\"boolean\"},{\"propertyName\":\"v2\",\"propertyType\":\"float\"},{\"propertyName\":\"v3\",\"propertyType\":\"string\"},{\"propertyName\":\"v4\",\"propertyType\":\"unknown\"},{\"propertyName\":\"v5\",\"propertyType\":\"null\"}],\"propertyType\":\"object\"}]", body.get("eventProperties").toString());
@@ -88,5 +109,8 @@ public class NetworkCallBodiesTests {
         Assert.assertEquals("testInstallationId", body.get("trackingId"));
         Assert.assertEquals(1.0, body.get("samplingRate"));
         Assert.assertEquals("testSessionId", body.get("sessionId"));
+        Assert.assertEquals(false, body.get("avoFunction"));
+        Assert.assertNull(body.get("eventId"));
+        Assert.assertNull(body.get("eventHash"));
     }
 }

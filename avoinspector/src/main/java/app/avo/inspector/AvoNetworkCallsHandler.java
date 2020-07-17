@@ -53,10 +53,20 @@ class AvoNetworkCallsHandler {
     }
 
     Map<String, Object> bodyForEventSchemaCall(String eventName,
-                                               Map<String, AvoEventSchemaType> schema) {
+                                               Map<String, AvoEventSchemaType> schema,
+                                               @Nullable String eventId, @Nullable String eventHash) {
         JSONArray properties = Util.remapProperties(schema);
 
         Map<String, Object> eventSchemaBody = createBaseCallBody();
+
+        if (eventId != null) {
+            eventSchemaBody.put("avoFunction", true);
+            eventSchemaBody.put("eventId", eventId);
+            eventSchemaBody.put("eventHash", eventHash);
+        } else {
+            eventSchemaBody.put("avoFunction", false);
+        }
+
         eventSchemaBody.put("type", "event");
         eventSchemaBody.put("eventName", eventName);
         eventSchemaBody.put("eventProperties", properties);
