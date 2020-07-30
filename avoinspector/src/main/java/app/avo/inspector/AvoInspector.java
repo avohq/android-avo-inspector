@@ -105,7 +105,11 @@ public class AvoInspector implements Inspector {
             public void onActivityStarted(@NonNull Activity activity) {
                 if (isHidden) {
                     isHidden = false;
-                    avoBatcher.enterForeground();
+                    try {
+                        avoBatcher.enterForeground();
+                    } catch (Exception e) {
+                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                    }
                     sessionTracker.startOrProlongSession(System.currentTimeMillis());
                 }
             }
@@ -116,7 +120,11 @@ public class AvoInspector implements Inspector {
             public void onTrimMemory(int i) {
                 if (i == TRIM_MEMORY_UI_HIDDEN) {
                     isHidden = true;
-                    avoBatcher.enterBackground();
+                    try {
+                        avoBatcher.enterBackground();
+                    } catch (Exception e) {
+                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                    }
                 }
             }
 
