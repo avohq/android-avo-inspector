@@ -167,7 +167,7 @@ class AvoBatcher {
 
             while (iter.hasNext()) {
                 Map<String, Object> item = iter.next();
-                if (!item.containsKey("type")) {
+                if (item == null || !item.containsKey("type")) {
                     iter.remove();
                 }
             }
