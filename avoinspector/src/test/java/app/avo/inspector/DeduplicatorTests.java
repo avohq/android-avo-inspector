@@ -128,7 +128,7 @@ public class DeduplicatorTests {
 		secondInnerMap.put("avo", new float[]{1f,2f,3f});
 		secondMap.put("3", secondInnerMap);
 
-		assertTrue(AvoDeduplicator.mapsEqual(firstMap, secondMap));
+		assertTrue(Util.mapsEqual(firstMap, secondMap));
 	}
 
 	@Test
@@ -159,7 +159,7 @@ public class DeduplicatorTests {
 	}
 
 	@Test
-	public void inspectorDuplicatesWhenTrackInAvoAndThenManually() {
+	public void inspectorDeduplicatesOnlyOneEventWhenTrackManuallyInAvoAndThenManually() {
 		AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
 		Map<String, AvoEventSchemaType> manuallyTrackedSchema = avoInspector.trackSchemaFromEvent("Test", testMap);
@@ -172,7 +172,7 @@ public class DeduplicatorTests {
 	}
 
 	@Test
-	public void inspectorDuplicatesWhenTrackManuallyAndThenInAvo() {
+	public void inspectorDeduplicatesOnlyOneEventWhenTrackInAvoManuallyAndThenInAvo() {
 		AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
 		Map<String, AvoEventSchemaType> avoTrackedSchema = avoInspector.avoFunctionTrackSchemaFromEvent("Test", testMap, "eventId", "eventHash");
