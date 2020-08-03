@@ -321,6 +321,8 @@ public class AvoInspector implements Inspector {
     @SuppressWarnings("rawtypes")
     @Override
     public @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties) {
+        sessionTracker.startOrProlongSession(System.currentTimeMillis());
+
         Map eventPropsToCheck = new HashMap<>();
         if (eventProperties instanceof Map) {
             eventPropsToCheck = (Map)eventProperties;

@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,8 @@ public class JsonSimpleTypeSchemaExtractionTests {
     ApplicationInfo mockApplicationInfo;
     @Mock
     SharedPreferences mockSharedPrefs;
+    @Mock
+    SharedPreferences.Editor mockEditor;
 
     @Before
     public void setUp() throws Exception {
@@ -52,6 +55,9 @@ public class JsonSimpleTypeSchemaExtractionTests {
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
+        when(mockSharedPrefs.edit()).thenReturn(mockEditor);
+        when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
+        when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
 
         sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
     }
