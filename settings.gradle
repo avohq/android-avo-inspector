@@ -1,2 +1,2 @@
-include ':avoinspectoexample', ':avoinspector'
+include ':avoinspectorexample', ':avoinspector'
 rootProject.name='AvoInspector'

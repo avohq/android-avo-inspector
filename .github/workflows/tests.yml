@@ -1,0 +1,24 @@
+name: Android Java
+
+on:
+  pull_request:
+    types: [opened, reopened, unlocked, synchronize]
+
+jobs:
+  Tests:
+    runs-on: macos-latest
+
+    env:
+      project-path: ./
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Android Java project environment
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Run tests
+        run: ./gradlew --warning-mode=none test
