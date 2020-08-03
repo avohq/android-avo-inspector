@@ -151,7 +151,7 @@ public class AvoInspector implements Inspector {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "SameParameterValue"})
     @NonNull Map<String, AvoEventSchemaType> avoFunctionTrackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties, @NonNull String eventId, @NonNull String eventHash) {
         if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, true)) {
             logPreExtract(eventName, eventProperties);
@@ -215,6 +215,7 @@ public class AvoInspector implements Inspector {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void showEventInVisualInspector(String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
         List<EventProperty> props = new ArrayList<>();
         if (mapParams != null) {
@@ -317,6 +318,7 @@ public class AvoInspector implements Inspector {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties) {
         Map eventPropsToCheck = new HashMap<>();
