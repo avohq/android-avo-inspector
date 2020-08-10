@@ -39,24 +39,12 @@ class AvoDeduplicator {
 		boolean result = false;
 
 		if (checkInAvoFunctions) {
-			for (String otherEventName : avoFunctionsEventsParams.keySet()) {
-				if (otherEventName.equals(eventName)) {
-					Map<String, ?> otherParams = avoFunctionsEventsParams.get(eventName);
-					if (mapsEqual(params, otherParams)) {
-						result = true;
-						break;
-					}
-				}
+			if (lookForEventIn(eventName, params, avoFunctionsEventsParams)) {
+				result = true;
 			}
 		} else {
-			for (String otherEventName : manualEventsParams.keySet()) {
-				if (otherEventName.equals(eventName)) {
-					Map<String, ?> otherParams = manualEventsParams.get(eventName);
-					if (mapsEqual(params, otherParams)) {
-						result = true;
-						break;
-					}
-				}
+			if (lookForEventIn(eventName, params, manualEventsParams)) {
+				result = true;
 			}
 		}
 
@@ -68,28 +56,43 @@ class AvoDeduplicator {
 		return result;
 	}
 
+	private static boolean lookForEventIn(String eventName, Map<String, ?> params, Map<String, Map<String, ?>> eventsStorage) {
+		for (String otherEventName : eventsStorage.keySet()) {
+			if (otherEventName.equals(eventName)) {
+				Map<String, ?> otherParams = eventsStorage.get(eventName);
+				if (mapsEqual(params, otherParams)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	static boolean hasSeenEventParams(Map<String, ?> params, boolean checkInAvoFunctions) {
 		boolean result = false;
 
 		if (checkInAvoFunctions) {
-			for (String otherEventName : avoFunctionsEventsParams.keySet()) {
-				Map<String, ?> otherParams = avoFunctionsEventsParams.get(otherEventName);
-				if (mapsEqual(params, otherParams)) {
-					result = true;
-					break;
-				}
+			if (lookForEventParamsIn(params, avoFunctionsEventsParams)) {
+				result = true;
 			}
 		} else {
-			for (String otherEventName : manualEventsParams.keySet()) {
-				Map<String, ?> otherParams = manualEventsParams.get(otherEventName);
-				if (mapsEqual(params, otherParams)) {
-					result = true;
-					break;
-				}
+			if (lookForEventParamsIn(params, manualEventsParams)) {
+				result = true;
 			}
 		}
 
 		return result;
+	}
+
+	private static boolean lookForEventParamsIn(Map<String, ?> params, Map<String, Map<String, ?>> eventsStorage) {
+		for (String otherEventName : eventsStorage.keySet()) {
+			Map<String, ?> otherParams = eventsStorage.get(otherEventName);
+			if (mapsEqual(params, otherParams)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	static boolean shouldRegisterSchemaFromManually(String eventName, Map<String, AvoEventSchemaType> shapes) {
@@ -101,14 +104,8 @@ class AvoDeduplicator {
 	private static boolean hasSameShapeInAvoFunctionsAs(String eventName, Map<String, AvoEventSchemaType> shapes) {
 		boolean result = false;
 
-		for (String otherEventName : avoFunctionsEventsParams.keySet()) {
-			if (otherEventName.equals(eventName)) {
-				Map<String, ?> otherShapes = avoSchemaExtractor.extractSchema(avoFunctionsEventsParams.get(eventName), false);
-				if (mapsEqual(shapes, otherShapes)) {
-					result = true;
-					break;
-				}
-			}
+		if (lookForEventSchemaIn(eventName, shapes, avoFunctionsEventsParams)) {
+			result = true;
 		}
 
 		if (result) {
@@ -116,6 +113,19 @@ class AvoDeduplicator {
 		}
 
 		return result;
+	}
+
+	private static boolean lookForEventSchemaIn(String eventName, Map<String, AvoEventSchemaType> shapes, Map<String, Map<String, ?>> eventsStorage) {
+		for (String otherEventName : eventsStorage.keySet()) {
+			if (otherEventName.equals(eventName)) {
+				Map<String, ?> otherShapes = avoSchemaExtractor.extractSchema(eventsStorage.get(eventName), false);
+				if (mapsEqual(shapes, otherShapes)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	private static void clearOldEvents() {
