@@ -2,19 +2,19 @@ package app.avo.inspector;
 
 import androidx.annotation.VisibleForTesting;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static app.avo.inspector.Util.mapsEqual;
 
 class AvoDeduplicator {
 
-	private static Map<Long, String> avoFunctionsEvents = new HashMap<>();
-	private static Map<Long, String> manualEvents = new HashMap<>();
+	private static ConcurrentHashMap<Long, String> avoFunctionsEvents = new ConcurrentHashMap<>();
+	private static ConcurrentHashMap<Long, String> manualEvents = new ConcurrentHashMap<>();
 
-	private static Map<String, Map<String, ?>> avoFunctionsEventsParams = new HashMap<>();
-	private static Map<String, Map<String, ?>> manualEventsParams = new HashMap<>();
+	private static ConcurrentHashMap<String, Map<String, ?>> avoFunctionsEventsParams = new ConcurrentHashMap<>();
+	private static ConcurrentHashMap<String, Map<String, ?>> manualEventsParams = new ConcurrentHashMap<>();
 
 	private static AvoSchemaExtractor avoSchemaExtractor = new AvoSchemaExtractor();
 
@@ -132,7 +132,7 @@ class AvoDeduplicator {
 		long now = System.currentTimeMillis();
 		long msToConsiderOld = 300;
 
-		for(Iterator<Map.Entry<Long, String>> it = avoFunctionsEvents.entrySet().iterator(); it.hasNext(); ) {
+		for(Iterator<Map.Entry<Long, String>> it = avoFunctionsEvents.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Long, String> entry = it.next();
 			Long timestamp = entry.getKey();
 			String eventName = entry.getValue();
@@ -142,7 +142,7 @@ class AvoDeduplicator {
 			}
 		}
 
-		for(Iterator<Map.Entry<Long, String>> it = manualEvents.entrySet().iterator(); it.hasNext(); ) {
+		for(Iterator<Map.Entry<Long, String>> it = manualEvents.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<Long, String> entry = it.next();
 			Long timestamp = entry.getKey();
 			String eventName = entry.getValue();

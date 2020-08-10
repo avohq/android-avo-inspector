@@ -141,7 +141,7 @@ class AvoBatcher {
                 batchFlushAttemptMillis = System.currentTimeMillis();
 
                 final List<Map<String, Object>> sendingEvents = events;
-                events = new ArrayList<>();
+                events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
 
                 networkCallsHandler.reportInspectorWithBatchBody(sendingEvents,
                         new AvoNetworkCallsHandler.Callback() {
