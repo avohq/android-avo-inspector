@@ -110,7 +110,11 @@ public class AvoInspector implements Inspector {
                     } catch (Exception e) {
                         Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
                     }
-                    sessionTracker.startOrProlongSession(System.currentTimeMillis());
+                    try {
+                        sessionTracker.startOrProlongSession(System.currentTimeMillis());
+                    } catch (Exception e) {
+                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                    }
                 }
             }
         });
@@ -153,58 +157,73 @@ public class AvoInspector implements Inspector {
 
     @SuppressWarnings({"unused", "SameParameterValue"})
     @NonNull Map<String, AvoEventSchemaType> avoFunctionTrackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties, @NonNull String eventId, @NonNull String eventHash) {
-        if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, true)) {
-            logPreExtract(eventName, eventProperties);
-            showEventInVisualInspector(eventName, eventProperties, null);
+        try {
+            if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, true)) {
+                logPreExtract(eventName, eventProperties);
+                showEventInVisualInspector(eventName, eventProperties, null);
 
-            Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
+                Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-            trackSchemaInternal(eventName, schema, eventId, eventHash);
+                trackSchemaInternal(eventName, schema, eventId, eventHash);
 
-            return schema;
-        } else {
-            if (isLogging()) {
-                Log.d("Avo Inspector", "[avo] Avo Inspector: Deduplicated event " + eventName);
+                return schema;
+            } else {
+                if (isLogging()) {
+                    Log.d("Avo Inspector", "[avo] Avo Inspector: Deduplicated event " + eventName);
+                }
+
+                return new HashMap<>();
             }
-
+        } catch (Exception e) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
             return new HashMap<>();
         }
     }
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties) {
-        if (AvoDeduplicator.shouldRegisterEvent(eventName, Util.jsonToMap(eventProperties), false)) {
-            logPreExtract(eventName, eventProperties);
-            showEventInVisualInspector(eventName, null, eventProperties);
+        try {
+            if (AvoDeduplicator.shouldRegisterEvent(eventName, Util.jsonToMap(eventProperties), false)) {
+                logPreExtract(eventName, eventProperties);
+                showEventInVisualInspector(eventName, null, eventProperties);
 
-            Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
+                Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-            trackSchemaInternal(eventName, schema, null, null);
+                trackSchemaInternal(eventName, schema, null, null);
 
-            return schema;
-        } else {
-            if (isLogging()) {
-                Log.d("Avo Inspector", "[avo] Avo Inspector: Deduplicated event " + eventName);
+                return schema;
+            } else {
+                if (isLogging()) {
+                    Log.d("Avo Inspector", "[avo] Avo Inspector: Deduplicated event " + eventName);
+                }
+                return new HashMap<>();
             }
+        } catch (Exception e) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
             return new HashMap<>();
         }
     }
 
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties) {
-        if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, false)) {
-            logPreExtract(eventName, eventProperties);
-            showEventInVisualInspector(eventName, eventProperties, null);
+        try {
+            if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, false)) {
+                logPreExtract(eventName, eventProperties);
+                showEventInVisualInspector(eventName, eventProperties, null);
 
-            Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
+                Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-            trackSchemaInternal(eventName, schema, null, null);
+                trackSchemaInternal(eventName, schema, null, null);
 
-            return schema;
-        } else {
-            if (isLogging()) {
-                Log.d("Avo Inspector", "Deduplicated event " + eventName);
+                return schema;
+            } else {
+                if (isLogging()) {
+                    Log.d("Avo Inspector", "Deduplicated event " + eventName);
+                }
+                return new HashMap<>();
             }
+        } catch (Exception e) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
             return new HashMap<>();
         }
     }
@@ -276,12 +295,16 @@ public class AvoInspector implements Inspector {
 
     @Override
     public void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema) {
-        if (AvoDeduplicator.shouldRegisterSchemaFromManually(eventName, eventSchema)) {
-            trackSchemaInternal(eventName, eventSchema, null, null);
-        } else {
-            if (isLogging()) {
-                Log.d("Avo Inspector", "Deduplicated event " + eventName);
+        try {
+            if (AvoDeduplicator.shouldRegisterSchemaFromManually(eventName, eventSchema)) {
+                trackSchemaInternal(eventName, eventSchema, null, null);
+            } else {
+                if (isLogging()) {
+                    Log.d("Avo Inspector", "Deduplicated event " + eventName);
+                }
             }
+        } catch (Exception e) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
         }
     }
 
@@ -321,24 +344,30 @@ public class AvoInspector implements Inspector {
     @SuppressWarnings("rawtypes")
     @Override
     public @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties) {
-        sessionTracker.startOrProlongSession(System.currentTimeMillis());
-
-        Map eventPropsToCheck = new HashMap<>();
-        if (eventProperties instanceof Map) {
-            eventPropsToCheck = (Map)eventProperties;
-        } else if (eventProperties instanceof JSONObject) {
-            eventPropsToCheck = Util.jsonToMap((JSONObject) eventProperties);
-        }
         try {
-            //noinspection unchecked
-            if (AvoDeduplicator.hasSeenEventParams(eventPropsToCheck, true)) {
-                Log.w("Avo Inspector", "WARNING! You are trying to extract schema shape that was just reported by your Avo functions. " +
-                        "This is an indicator of duplicate inspector reporting. " +
-                        "Please reach out to support@avo.app for advice if you are not sure how to handle this.");
-            }
-        } catch (Exception ignored) {}
+            sessionTracker.startOrProlongSession(System.currentTimeMillis());
 
-        return avoSchemaExtractor.extractSchema(eventProperties, true);
+            Map eventPropsToCheck = new HashMap<>();
+            if (eventProperties instanceof Map) {
+                eventPropsToCheck = (Map) eventProperties;
+            } else if (eventProperties instanceof JSONObject) {
+                eventPropsToCheck = Util.jsonToMap((JSONObject) eventProperties);
+            }
+            try {
+                //noinspection unchecked
+                if (AvoDeduplicator.hasSeenEventParams(eventPropsToCheck, true)) {
+                    Log.w("Avo Inspector", "WARNING! You are trying to extract schema shape that was just reported by your Avo functions. " +
+                            "This is an indicator of duplicate inspector reporting. " +
+                            "Please reach out to support@avo.app for advice if you are not sure how to handle this.");
+                }
+            } catch (Exception ignored) {
+            }
+
+            return avoSchemaExtractor.extractSchema(eventProperties, true);
+        } catch (Exception e) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            return new HashMap<>();
+        }
     }
 
     @Override
