@@ -26,6 +26,7 @@ import app.avo.androidanalyticsdebugger.DebuggerManager;
 import app.avo.androidanalyticsdebugger.DebuggerMode;
 import app.avo.androidanalyticsdebugger.EventProperty;
 import app.avo.androidanalyticsdebugger.PropertyError;
+import io.sentry.Sentry;
 
 public class AvoInspector implements Inspector {
 
@@ -60,6 +61,7 @@ public class AvoInspector implements Inspector {
     }
 
     public AvoInspector(String apiKey, Application application, AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
+        String appVersionString = "";
         try {
             PackageManager packageManager = application.getPackageManager();
             PackageInfo pInfo = packageManager.getPackageInfo(application.getPackageName(), 0);
@@ -68,6 +70,7 @@ public class AvoInspector implements Inspector {
             } else {
                 appVersion = (long) pInfo.versionCode;
             }
+            appVersionString = pInfo.versionName;
         } catch (PackageManager.NameNotFoundException ignored) {}
 
         avoSchemaExtractor = new AvoSchemaExtractor();
@@ -77,6 +80,8 @@ public class AvoInspector implements Inspector {
 
         this.env = env.getName();
         this.apiKey = apiKey;
+
+        setupSentry(appVersionString);
 
         AvoInstallationId installationId = new AvoInstallationId(application);
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
@@ -108,12 +113,12 @@ public class AvoInspector implements Inspector {
                     try {
                         avoBatcher.enterForeground();
                     } catch (Exception e) {
-                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                        handleException(e);
                     }
                     try {
                         sessionTracker.startOrProlongSession(System.currentTimeMillis());
                     } catch (Exception e) {
-                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                        handleException(e);
                     }
                 }
             }
@@ -127,7 +132,7 @@ public class AvoInspector implements Inspector {
                     try {
                         avoBatcher.enterBackground();
                     } catch (Exception e) {
-                        Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+                        handleException(e);
                     }
                 }
             }
@@ -140,18 +145,51 @@ public class AvoInspector implements Inspector {
         });
     }
 
+    private void handleException(Exception e) {
+        try {
+            Sentry.capture(e);
+        } catch (Throwable throwable) {
+            Log.e("Avo Inspector", "Failed to report a crash. Please report to support@avo.app.", e);
+        }
+        if (AvoInspectorEnv.Dev.getName().equals(this.env)) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setupSentry(String appVersionString) {
+        try {
+            Sentry.init("https://c88eba7699af4b568fc82fc15128fc7f@o75921.ingest.sentry.io/5394353");
+
+            Sentry.getStoredClient().addTag("App name", appName);
+            Sentry.getStoredClient().addTag("Environment", this.env);
+            Sentry.getStoredClient().addTag("App Version", appVersionString);
+            Sentry.getStoredClient().addTag("App Version Number", this.appVersion.toString());
+            Sentry.getStoredClient().addTag("Lib Version", BuildConfig.VERSION_NAME);
+            Sentry.getStoredClient().addTag("Lib Version Number", (Long.valueOf(BuildConfig.VERSION_CODE)).toString());
+        } catch (Exception ignored) {}
+    }
+
     @Override
     public void showVisualInspector(Activity rootActivity, DebuggerMode visualInspectorMode) {
-        if (debugger == null) {
-            debugger = new DebuggerManager(rootActivity.getApplication());
+        try {
+            if (debugger == null) {
+                debugger = new DebuggerManager(rootActivity.getApplication());
+            }
+            debugger.showDebugger(rootActivity, visualInspectorMode);
+        } catch (Exception e) {
+            handleException(e);
         }
-        debugger.showDebugger(rootActivity, visualInspectorMode);
     }
 
     @Override
     public void hideVisualInspector(Activity rootActivity) {
-        if (debugger != null) {
-            debugger.hideDebugger(rootActivity);
+        try {
+            if (debugger != null) {
+                debugger.hideDebugger(rootActivity);
+            }
+        } catch (Exception e) {
+            handleException(e);
         }
     }
 
@@ -175,7 +213,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            handleException(e);
             return new HashMap<>();
         }
     }
@@ -199,7 +237,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            handleException(e);
             return new HashMap<>();
         }
     }
@@ -223,7 +261,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            handleException(e);
             return new HashMap<>();
         }
     }
@@ -304,7 +342,7 @@ public class AvoInspector implements Inspector {
                 }
             }
         } catch (Exception e) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            handleException(e);
         }
     }
 
@@ -365,7 +403,7 @@ public class AvoInspector implements Inspector {
 
             return avoSchemaExtractor.extractSchema(eventProperties, true);
         } catch (Exception e) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            handleException(e);
             return new HashMap<>();
         }
     }

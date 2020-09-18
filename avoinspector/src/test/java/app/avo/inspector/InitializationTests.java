@@ -56,12 +56,12 @@ public class InitializationTests {
         assertEquals(10L, (long)sut.appVersion);
         assertEquals("apiKey", sut.apiKey);
         assertEquals("testPckg", sut.appName);
-        assertEquals(2, sut.libVersion);
+        assertEquals(3, sut.libVersion);
 
         assertEquals("10", sut.avoBatcher.networkCallsHandler.appVersion);
         assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
         assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
-        assertEquals("2", sut.avoBatcher.networkCallsHandler.libVersion);
+        assertEquals("3", sut.avoBatcher.networkCallsHandler.libVersion);
         assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
     }
 

@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(view);
 
         final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
-                getApplication(), AvoInspectorEnv.Dev, this);
+                getApplication(), AvoInspectorEnv.Staging, this);
 
 	    binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
