@@ -149,9 +149,9 @@ public class AvoInspector implements Inspector {
         try {
             Sentry.capture(e);
         } catch (Throwable throwable) {
-            Log.e("Avo Inspector", "Failed to report crash. Please report to support@avo.app.", e);
+            Log.e("Avo Inspector", "Failed to report a crash. Please report to support@avo.app.", e);
         }
-        if (this.env.equals(AvoInspectorEnv.Dev.getName())) {
+        if (AvoInspectorEnv.Dev.getName().equals(this.env)) {
             Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
             throw new RuntimeException(e);
         }
