@@ -17,6 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +28,13 @@ import app.avo.androidanalyticsdebugger.DebuggerManager;
 import app.avo.androidanalyticsdebugger.DebuggerMode;
 import app.avo.androidanalyticsdebugger.EventProperty;
 import app.avo.androidanalyticsdebugger.PropertyError;
+import io.sentry.DefaultSentryClientFactory;
 import io.sentry.Sentry;
+import io.sentry.SentryClient;
+import io.sentry.SentryClientFactory;
+import io.sentry.config.Lookup;
+import io.sentry.config.provider.ConfigurationProvider;
+import io.sentry.dsn.Dsn;
 
 public class AvoInspector implements Inspector {
 
@@ -159,7 +167,17 @@ public class AvoInspector implements Inspector {
 
     private void setupSentry(String appVersionString) {
         try {
-            Sentry.init("https://c88eba7699af4b568fc82fc15128fc7f@o75921.ingest.sentry.io/5394353");
+            Lookup lookup = Lookup.getDefaultWithAdditionalProviders(Collections.<ConfigurationProvider>singletonList(new ConfigurationProvider() {
+                @Override
+                public String getProperty(String key) {
+                    if (key.equals(DefaultSentryClientFactory.UNCAUGHT_HANDLER_ENABLED_OPTION)) {
+                        return Boolean.FALSE.toString();
+                    }
+                    return null;
+                }
+            }), new ArrayList<ConfigurationProvider>());
+
+            Sentry.init("https://c88eba7699af4b568fc82fc15128fc7f@o75921.ingest.sentry.io/5394353", new DefaultSentryClientFactory(lookup));
 
             Sentry.getStoredClient().addTag("App name", appName);
             Sentry.getStoredClient().addTag("Environment", this.env);
