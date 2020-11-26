@@ -17,7 +17,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,11 +29,10 @@ import app.avo.androidanalyticsdebugger.EventProperty;
 import app.avo.androidanalyticsdebugger.PropertyError;
 import io.sentry.DefaultSentryClientFactory;
 import io.sentry.Sentry;
-import io.sentry.SentryClient;
-import io.sentry.SentryClientFactory;
 import io.sentry.config.Lookup;
 import io.sentry.config.provider.ConfigurationProvider;
-import io.sentry.dsn.Dsn;
+
+import static app.avo.inspector.Util.handleException;
 
 public class AvoInspector implements Inspector {
 
@@ -121,12 +119,12 @@ public class AvoInspector implements Inspector {
                     try {
                         avoBatcher.enterForeground();
                     } catch (Exception e) {
-                        handleException(e);
+                        handleException(e, AvoInspector.this.env);
                     }
                     try {
                         sessionTracker.startOrProlongSession(System.currentTimeMillis());
                     } catch (Exception e) {
-                        handleException(e);
+                        handleException(e, AvoInspector.this.env);
                     }
                 }
             }
@@ -140,7 +138,7 @@ public class AvoInspector implements Inspector {
                     try {
                         avoBatcher.enterBackground();
                     } catch (Exception e) {
-                        handleException(e);
+                        handleException(e, AvoInspector.this.env);
                     }
                 }
             }
@@ -151,18 +149,6 @@ public class AvoInspector implements Inspector {
             @Override
             public void onLowMemory() {}
         });
-    }
-
-    private void handleException(Exception e) {
-        try {
-            Sentry.capture(e);
-        } catch (Throwable throwable) {
-            Log.e("Avo Inspector", "Failed to report a crash. Please report to support@avo.app.", e);
-        }
-        if (AvoInspectorEnv.Dev.getName().equals(this.env)) {
-            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
-            throw new RuntimeException(e);
-        }
     }
 
     private void setupSentry(String appVersionString) {
@@ -196,7 +182,7 @@ public class AvoInspector implements Inspector {
             }
             debugger.showDebugger(rootActivity, visualInspectorMode);
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
         }
     }
 
@@ -207,7 +193,7 @@ public class AvoInspector implements Inspector {
                 debugger.hideDebugger(rootActivity);
             }
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
         }
     }
 
@@ -231,7 +217,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
             return new HashMap<>();
         }
     }
@@ -255,7 +241,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
             return new HashMap<>();
         }
     }
@@ -279,7 +265,7 @@ public class AvoInspector implements Inspector {
                 return new HashMap<>();
             }
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
             return new HashMap<>();
         }
     }
@@ -360,7 +346,7 @@ public class AvoInspector implements Inspector {
                 }
             }
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
         }
     }
 
@@ -421,7 +407,7 @@ public class AvoInspector implements Inspector {
 
             return avoSchemaExtractor.extractSchema(eventProperties, true);
         } catch (Exception e) {
-            handleException(e);
+            handleException(e, AvoInspector.this.env);
             return new HashMap<>();
         }
     }
