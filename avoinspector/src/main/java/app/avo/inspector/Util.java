@@ -1,5 +1,7 @@
 package app.avo.inspector;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
@@ -17,6 +19,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+
+import io.sentry.Sentry;
 
 class Util {
 
@@ -184,5 +188,17 @@ class Util {
             return Arrays.equals((double[]) paramValue, (double[]) otherParamValue);
         }
         return false;
+    }
+
+    static void handleException(Throwable e, String envName) {
+        try {
+            Sentry.capture(e);
+        } catch (Throwable throwable) {
+            Log.e("Avo Inspector", "Failed to report a crash. Please report to support@avo.app.", e);
+        }
+        if (AvoInspectorEnv.Dev.getName().equals(envName)) {
+            Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
+            throw new RuntimeException(e);
+        }
     }
 }

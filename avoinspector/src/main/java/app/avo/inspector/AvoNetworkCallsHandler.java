@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -143,7 +144,7 @@ class AvoNetworkCallsHandler {
                             callbackHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    completionHandler.call("HTTP error code: " + responseCode);
+                                    completionHandler.call(true);
                                 }
                             });
                         } else {
@@ -178,7 +179,7 @@ class AvoNetworkCallsHandler {
                             callbackHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    completionHandler.call(null);
+                                    completionHandler.call(false);
                                 }
                             });
                         }
@@ -191,17 +192,20 @@ class AvoNetworkCallsHandler {
                     if (AvoInspector.isLogging()) {
                         Log.e("AvoInspector", "Failed to perform network call, will retry later");
                     }
-                    completionHandler.call("Failed to perform network call");
+                    completionHandler.call(true);
+                } catch (Exception e) {
+                    Util.handleException(e, envName);
+                    completionHandler.call(false);
                 }
             }
         }).start();
-
     }
 
     private void writeTrackingCallBody(List<Map<String, Object>> data, HttpsURLConnection connection) throws IOException {
 
         JSONArray body = new JSONArray();
-        for (Map<String, Object> event: data) {
+        for (Iterator<Map<String, Object>> iterator = data.iterator(); iterator.hasNext(); ) {
+            Map<String, Object> event = iterator.next();
             JSONObject eventJson = new JSONObject(event);
             body.put(eventJson);
         }
@@ -220,6 +224,6 @@ class AvoNetworkCallsHandler {
     }
 
     interface Callback {
-        void call(@Nullable String error);
+        void call(boolean retry);
     }
 }

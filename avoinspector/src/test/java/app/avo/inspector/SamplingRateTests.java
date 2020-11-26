@@ -36,7 +36,7 @@ public class SamplingRateTests {
                                              }},
                     new AvoNetworkCallsHandler.Callback() {
                         @Override
-                        public void call(@Nullable String error) {
+                        public void call(boolean retry) {
                         }
                     });
         }
@@ -63,7 +63,7 @@ public class SamplingRateTests {
                                              }},
                     new AvoNetworkCallsHandler.Callback() {
                         @Override
-                        public void call(@Nullable String error) {
+                        public void call(boolean retry) {
                             Assert.fail();
                         }
                     });

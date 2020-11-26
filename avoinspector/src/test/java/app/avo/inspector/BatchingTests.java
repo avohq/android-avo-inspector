@@ -171,7 +171,7 @@ public class BatchingTests {
                 networkCallbackCaptor.capture());
 
         // When
-        networkCallbackCaptor.getValue().call(null);
+        networkCallbackCaptor.getValue().call(false);
 
         // Then
         assertEquals(1000, listCaptor.getValue().size());
@@ -252,7 +252,7 @@ public class BatchingTests {
         assertEquals(0, sut.events.size());
 
         // When
-        networkCallbackCaptor.getValue().call("Failed");
+        networkCallbackCaptor.getValue().call(true);
 
         assertEquals(AvoBatcher.batchSize, sut.events.size());
     }
@@ -292,7 +292,7 @@ public class BatchingTests {
         assertEquals(0, sut.events.size());
 
         // When
-        networkCallbackCaptor.getValue().call(null);
+        networkCallbackCaptor.getValue().call(false);
 
         // Then
         assertEquals(0, sut.events.size());

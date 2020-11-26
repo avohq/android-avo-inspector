@@ -140,18 +140,18 @@ class AvoBatcher {
 
                 batchFlushAttemptMillis = System.currentTimeMillis();
 
-                final List<Map<String, Object>> sendingEvents = events;
+                final List<Map<String, Object>> sendingEvents = new ArrayList<>(events);
                 events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
 
                 networkCallsHandler.reportInspectorWithBatchBody(sendingEvents,
                         new AvoNetworkCallsHandler.Callback() {
                     @Override
-                    public void call(@Nullable String error) {
+                    public void call(boolean retry) {
                         if (clearCache) {
                             sharedPrefs.edit().remove(avoInspectorBatchKey).apply();
                         }
 
-                        if (error != null) {
+                        if (retry) {
                             events.addAll(sendingEvents);
                         }
                     }
