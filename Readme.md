@@ -38,11 +38,17 @@ Obtain the API key at [Avo.app](https://www.avo.app/welcome)
 
 Java
 ```java
+import app.avo.inspector.AvoInspector;
+import app.avo.inspector.AvoInspectorEnv;
+
 AvoInspector avoInspector = new AvoInspector("MY_API_KEY", getApplication(), AvoInspectorEnv.Dev, activity);
 ```
 
 Kotlin
 ```kotlin
+import app.avo.inspector.AvoInspector
+import app.avo.inspector.AvoInspectorEnv
+
 val avoInspector = AvoInspector("MY_API_KEY", application, AvoInspectorEnv.Dev, activity)
 ```
 
