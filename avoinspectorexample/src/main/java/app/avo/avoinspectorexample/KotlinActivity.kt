@@ -1,17 +1,12 @@
 package app.avo.avoinspectorexample
 
 import android.app.Activity
-import android.app.Application
 import android.os.Bundle
 import app.avo.androidanalyticsdebugger.DebuggerMode
 import app.avo.inspector.AvoEventSchemaType
 import app.avo.inspector.AvoEventSchemaType.*
 import app.avo.inspector.AvoInspector
 import app.avo.inspector.AvoInspectorEnv
-import com.segment.analytics.Analytics
-import com.segment.analytics.Middleware
-import com.segment.analytics.integrations.BasePayload
-import com.segment.analytics.integrations.TrackPayload
 
 
 @SuppressWarnings("ALL")
