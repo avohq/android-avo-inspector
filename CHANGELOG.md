@@ -15,6 +15,8 @@ debugImplementation 'com.github.avohq.android-avo-inspector:dev:TAG'
 
 ### Breaking change
 
-`Inspector.getVisualInspector()` now returns a nullable `Object` instead of nullable `DebuggerManager`.
-
+- `Inspector.getVisualInspector()` now returns a nullable `Object` instead of nullable `DebuggerManager`.
 You can safely cast it to a nullable `DebuggerManager` in the `dev` build and it will always be `null` in the prod build.
+
+- Dependency reference is changed to  `com.github.avohq.android-avo-inspector:dev:TAG` and `com.github.avohq.android-avo-inspector:prod:TAG`
+(used to be from `com.github.avohq:android-avo-inspector:TAG`)
