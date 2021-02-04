@@ -15,11 +15,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.avo.androidanalyticsdebugger.DebuggerManager;
-import app.avo.androidanalyticsdebugger.DebuggerMode;
 import app.avo.avoinspectorexample.databinding.ActivityMainBinding;
 import app.avo.inspector.AvoEventSchemaType;
 import app.avo.inspector.AvoInspector;
 import app.avo.inspector.AvoInspectorEnv;
+import app.avo.inspector.VisualInspectorMode;
 
 @SuppressWarnings("ALL")
 public class MainActivity extends AppCompatActivity {
@@ -119,9 +119,9 @@ public class MainActivity extends AppCompatActivity {
 
 		avoInspector.hideVisualInspector(this);
 
-		avoInspector.showVisualInspector(this, DebuggerMode.bubble);
+		avoInspector.showVisualInspector(this, VisualInspectorMode.bubble);
 
-		DebuggerManager visualInspector = avoInspector.getVisualInspector();
+		DebuggerManager visualInspector = (DebuggerManager) avoInspector.getVisualInspector();
 
 		AvoInspector.setBatchSize(15);
 		AvoInspector.setBatchFlushSeconds(10);

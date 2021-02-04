@@ -100,19 +100,19 @@ public class VisualDebuggerTests {
 	@Test
 	public void visualInspectorIsInitializedInDevAndStagingAndNotInProd() {
 		AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
-		assertNotNull(avoInspector.debugger);
+		assertNotNull(avoInspector.visualInspector.debugger);
 
 		avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Staging);
-		assertNotNull(avoInspector.debugger);
+		assertNotNull(avoInspector.visualInspector.debugger);
 
 		avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Prod);
-		assertNull(avoInspector.debugger);
+		assertNull(avoInspector.visualInspector.debugger);
 	}
 
 	@Test
 	public void avoFunctionIntegrationCallsVisualInspector() {
 		AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
-		avoInspector.debugger = mockDebugger;
+		avoInspector.visualInspector.debugger = mockDebugger;
 
 		avoInspector.avoFunctionTrackSchemaFromEvent("Test", testMap, "eventId", "eventHash");
 
@@ -123,7 +123,7 @@ public class VisualDebuggerTests {
 	@Test
 	public void manualTrackingCallsVisualInspector() {
 		AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
-		avoInspector.debugger = mockDebugger;
+		avoInspector.visualInspector.debugger = mockDebugger;
 
 		avoInspector.trackSchemaFromEvent("Test", testMap);
 
