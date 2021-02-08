@@ -12,21 +12,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import app.avo.androidanalyticsdebugger.DebuggerManager;
-import app.avo.androidanalyticsdebugger.DebuggerMode;
-import app.avo.androidanalyticsdebugger.EventProperty;
-import app.avo.androidanalyticsdebugger.PropertyError;
 import io.sentry.DefaultSentryClientFactory;
 import io.sentry.Sentry;
 import io.sentry.config.Lookup;
@@ -51,10 +43,9 @@ public class AvoInspector implements Inspector {
 
     boolean isHidden = true;
 
-    @Nullable
-    DebuggerManager debugger;
+    @NonNull
+    VisualInspector visualInspector;
 
-    @SuppressWarnings("unused")
     AvoInspector(String apiKey, Application application, String envString, @Nullable Activity rootActivityForVisualInspector) {
         this(apiKey, application,
                 envString.toLowerCase().equals("prod") ? AvoInspectorEnv.Prod :
@@ -62,11 +53,11 @@ public class AvoInspector implements Inspector {
                 rootActivityForVisualInspector);
     }
 
-    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env) {
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env) {
         this(apiKey, application, env, null);
     }
 
-    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
         String appVersionString = "";
         try {
             PackageManager packageManager = application.getPackageManager();
@@ -104,12 +95,7 @@ public class AvoInspector implements Inspector {
             enableLogging(false);
         }
 
-        if (env != AvoInspectorEnv.Prod) {
-            debugger = new DebuggerManager(application);
-            if (rootActivityForVisualInspector != null) {
-                showVisualInspector(rootActivityForVisualInspector, DebuggerMode.bubble);
-            }
-        }
+        visualInspector = new VisualInspector(env, application, rootActivityForVisualInspector);
 
         application.registerActivityLifecycleCallbacks(new EmptyActivityLifecycleCallbacks() {
             @Override
@@ -175,34 +161,29 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public void showVisualInspector(Activity rootActivity, DebuggerMode visualInspectorMode) {
+    public void showVisualInspector(@NonNull Activity rootActivity, @NonNull VisualInspectorMode visualInspectorMode) {
         try {
-            if (debugger == null) {
-                debugger = new DebuggerManager(rootActivity.getApplication());
-            }
-            debugger.showDebugger(rootActivity, visualInspectorMode);
+            visualInspector.show(rootActivity, visualInspectorMode);
         } catch (Exception e) {
             handleException(e, AvoInspector.this.env);
         }
     }
 
     @Override
-    public void hideVisualInspector(Activity rootActivity) {
+    public void hideVisualInspector(@NonNull Activity rootActivity) {
         try {
-            if (debugger != null) {
-                debugger.hideDebugger(rootActivity);
-            }
+            visualInspector.hide(rootActivity);
         } catch (Exception e) {
             handleException(e, AvoInspector.this.env);
         }
     }
 
-    @SuppressWarnings({"unused", "SameParameterValue"})
+    @SuppressWarnings({"SameParameterValue"})
     @NonNull Map<String, AvoEventSchemaType> avoFunctionTrackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties, @NonNull String eventId, @NonNull String eventHash) {
         try {
             if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, true)) {
                 logPreExtract(eventName, eventProperties);
-                showEventInVisualInspector(eventName, eventProperties, null);
+                visualInspector.showEventInVisualInspector(eventName, eventProperties, null);
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
@@ -227,7 +208,7 @@ public class AvoInspector implements Inspector {
         try {
             if (AvoDeduplicator.shouldRegisterEvent(eventName, Util.jsonToMap(eventProperties), false)) {
                 logPreExtract(eventName, eventProperties);
-                showEventInVisualInspector(eventName, null, eventProperties);
+                visualInspector.showEventInVisualInspector(eventName, null, eventProperties);
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
@@ -251,7 +232,7 @@ public class AvoInspector implements Inspector {
         try {
             if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, false)) {
                 logPreExtract(eventName, eventProperties);
-                showEventInVisualInspector(eventName, eventProperties, null);
+                visualInspector.showEventInVisualInspector(eventName, eventProperties, null);
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
@@ -276,65 +257,6 @@ public class AvoInspector implements Inspector {
         }
     }
 
-    @SuppressWarnings("rawtypes")
-    private void showEventInVisualInspector(String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
-        List<EventProperty> props = new ArrayList<>();
-        if (mapParams != null) {
-            for (Map.Entry<String, ?> param : mapParams.entrySet()) {
-                String name = param.getKey();
-                Object value = param.getValue();
-                if (name != null) {
-                    String valueDescription;
-                    if (value == null) {
-                        valueDescription = "null";
-                    } else if (value instanceof List) {
-                        valueDescription = new JSONArray((List) value).toString();
-                    } else if (value instanceof Map) {
-                        try {
-                            valueDescription = new JSONObject((Map)value).toString(1)
-                                    .replace("\n", "")
-                                    .replace("\\", "");
-                        } catch (JSONException ex) {
-                            valueDescription = new JSONObject((Map)value).toString()
-                                    .replace("\\", "");
-                        }
-                    } else {
-                        valueDescription = value.toString();
-                    }
-                    props.add(new EventProperty("", name, valueDescription));
-                }
-            }
-        }
-        if (jsonParams != null) {
-            for (Iterator<String> it = jsonParams.keys(); it.hasNext(); ) {
-                String name = it.next();
-                try {
-                    Object value = jsonParams.get(name);
-                    props.add(new EventProperty("", name, value != JSONObject.NULL ? value.toString() : "null"));
-                } catch (JSONException ignored) {
-                }
-            }
-        }
-
-        if (debugger != null) {
-            debugger.publishEvent(System.currentTimeMillis(), "Event: " + eventName, props, new ArrayList<PropertyError>());
-        }
-    }
-
-    private void showSchemaInVisualInspector(String eventName, Map<String, AvoEventSchemaType> schema) {
-        List<EventProperty> props = new ArrayList<>();
-        for (Map.Entry<String, AvoEventSchemaType> param: schema.entrySet()) {
-            String name = param.getKey();
-            AvoEventSchemaType value = param.getValue();
-            if (name != null) {
-                props.add(new EventProperty("", name, value != null ? value.getReadableName() : "null"));
-            }
-        }
-        if (debugger != null) {
-            debugger.publishEvent(System.currentTimeMillis(), "Schema: " + eventName, props, new ArrayList<PropertyError>());
-        }
-    }
-
     @Override
     public void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema) {
         try {
@@ -356,7 +278,7 @@ public class AvoInspector implements Inspector {
         }
 
         logPostExtract(eventName, eventSchema);
-        showSchemaInVisualInspector(eventName, eventSchema);
+        visualInspector.showSchemaInVisualInspector(eventName, eventSchema);
 
         sessionTracker.startOrProlongSession(System.currentTimeMillis());
 
@@ -414,8 +336,8 @@ public class AvoInspector implements Inspector {
 
     @Override
     @Nullable
-    public DebuggerManager getVisualInspector() {
-        return debugger;
+    public Object getVisualInspector() {
+        return visualInspector.getDebuggerManager();
     }
 
     @SuppressWarnings("WeakerAccess")

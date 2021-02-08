@@ -15,13 +15,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.avo.androidanalyticsdebugger.DebuggerManager;
-import app.avo.androidanalyticsdebugger.DebuggerMode;
 import app.avo.avoinspectorexample.databinding.ActivityMainBinding;
 import app.avo.inspector.AvoEventSchemaType;
 import app.avo.inspector.AvoInspector;
 import app.avo.inspector.AvoInspectorEnv;
+import app.avo.inspector.VisualInspectorMode;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
@@ -37,97 +37,98 @@ public class MainActivity extends AppCompatActivity {
         final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
                 getApplication(), AvoInspectorEnv.Staging, this);
 
-	    binding.sendEventButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String eventName = binding.eventNameInput.getText().toString();
+        binding.sendEventButton.setOnClickListener(view1 -> {
+            String eventName = binding.eventNameInput.getText().toString();
 
-                String paramName0 = binding.paramNameInput0.getText().toString();
-                Object paramValue0 = parseValue(binding.paramValueInput0.getText().toString());
+            String paramName0 = binding.paramNameInput0.getText().toString();
+            Object paramValue0 = parseValue(binding.paramValueInput0.getText().toString());
 
-                String paramName1 = binding.paramNameInput1.getText().toString();
-                Object paramValue1 = parseValue(binding.paramValueInput1.getText().toString());
+            String paramName1 = binding.paramNameInput1.getText().toString();
+            Object paramValue1 = parseValue(binding.paramValueInput1.getText().toString());
 
-                String paramName2 = binding.paramNameInput2.getText().toString();
-                Object paramValue2 = parseValue(binding.paramValueInput2.getText().toString());
+            String paramName2 = binding.paramNameInput2.getText().toString();
+            Object paramValue2 = parseValue(binding.paramValueInput2.getText().toString());
 
-                String paramName3 = binding.paramNameInput3.getText().toString();
-                Object paramValue3 = parseValue(binding.paramValueInput3.getText().toString());
+            String paramName3 = binding.paramNameInput3.getText().toString();
+            Object paramValue3 = parseValue(binding.paramValueInput3.getText().toString());
 
-                String paramName4 = binding.paramNameInput4.getText().toString();
-                Object paramValue4 = parseValue(binding.paramValueInput4.getText().toString());
+            String paramName4 = binding.paramNameInput4.getText().toString();
+            Object paramValue4 = parseValue(binding.paramValueInput4.getText().toString());
 
-                String paramName5 = binding.paramNameInput5.getText().toString();
-                Object paramValue5 = parseValue(binding.paramValueInput5.getText().toString());
+            String paramName5 = binding.paramNameInput5.getText().toString();
+            Object paramValue5 = parseValue(binding.paramValueInput5.getText().toString());
 
-                Map<String, Object> params = new HashMap<>();
-                params.put(paramName0, paramValue0);
-                params.put(paramName1, paramValue1);
-                params.put(paramName2, paramValue2);
-                params.put(paramName3, paramValue3);
-                params.put(paramName4, paramValue4);
-                params.put(paramName5, paramValue5);
+            Map<String, Object> params = new HashMap<>();
+            params.put(paramName0, paramValue0);
+            params.put(paramName1, paramValue1);
+            params.put(paramName2, paramValue2);
+            params.put(paramName3, paramValue3);
+            params.put(paramName4, paramValue4);
+            params.put(paramName5, paramValue5);
 
-                avoInspector.trackSchemaFromEvent(eventName, params);
-            }
+            avoInspector.trackSchemaFromEvent(eventName, params);
         });
     }
 
-	private void exampleUsage(final AvoInspector avoInspector) {
-		AvoInspector.enableLogging(true);
 
-		Middleware avoInspectorMiddleware = new Middleware() {
-		    @Override
-		    public void intercept(Chain chain) {
+    @SuppressWarnings({"Convert2Lambda"})
+    private void exampleUsage(final AvoInspector avoInspector) {
+        AvoInspector.enableLogging(true);
 
-		        BasePayload payload = chain.payload();
+        Middleware avoInspectorMiddleware = new Middleware() {
+            @Override
+            public void intercept(Chain chain) {
 
-		        if (payload.type() == BasePayload.Type.track) {
-		            TrackPayload trackPayload = (TrackPayload) payload;
-		            avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties());
-		        }
+                BasePayload payload = chain.payload();
 
-		        chain.proceed(payload);
-		    }
-		};
-		Analytics analytics = new Analytics.Builder(getApplicationContext(), "SEGMENT_ANALYTICS_WRITE_KEY")
-		        .middleware(avoInspectorMiddleware)
-		        .build();
+                if (payload.type() == BasePayload.Type.track) {
+                    TrackPayload trackPayload = (TrackPayload) payload;
+                    avoInspector.trackSchemaFromEvent(trackPayload.event(), trackPayload.properties());
+                }
 
-		avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
-		    put("String Prop", "Prop Value");
-		    put("Float Name", 1.0);
-		    put("Bool Name", true);
-		}});
+                chain.proceed(payload);
+            }
+        };
+        Analytics analytics = new Analytics.Builder(getApplicationContext(), "SEGMENT_ANALYTICS_WRITE_KEY")
+                .useSourceMiddleware(avoInspectorMiddleware)
+                .build();
 
-		Map<String, AvoEventSchemaType> eventSchema = new HashMap<>();
-		eventSchema.put("userId", new AvoEventSchemaType.AvoInt());
-		eventSchema.put("emailAddress", new AvoEventSchemaType.AvoString());
-		eventSchema.put("key", new AvoEventSchemaType.AvoString());
+        avoInspector.trackSchemaFromEvent("Event name", new HashMap<String, Object>() {{
+            put("String Prop", "Prop Value");
+            put("Float Name", 1.0);
+            put("Bool Name", true);
+        }});
 
-		avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
-		    put("String Prop", new AvoEventSchemaType.AvoString());
-		    put("Float Name", new AvoEventSchemaType.AvoFloat());
-		    put("Bool Name", new AvoEventSchemaType.AvoBoolean());
-		}});
+        Map<String, AvoEventSchemaType> eventSchema = new HashMap<>();
+        eventSchema.put("userId", new AvoEventSchemaType.AvoInt());
+        eventSchema.put("emailAddress", new AvoEventSchemaType.AvoString());
+        eventSchema.put("key", new AvoEventSchemaType.AvoString());
 
-		Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(new HashMap<String, Object>() {{
-		    put("String Prop", "Prop Value");
-		    put("Float Name", 1.0);
-		    put("Bool Name", true);
-		}});
+        avoInspector.trackSchema("My event", eventSchema);
 
-		avoInspector.hideVisualInspector(this);
+        avoInspector.trackSchema("Event name", new HashMap<String, AvoEventSchemaType>() {{
+            put("String Prop", new AvoEventSchemaType.AvoString());
+            put("Float Name", new AvoEventSchemaType.AvoFloat());
+            put("Bool Name", new AvoEventSchemaType.AvoBoolean());
+        }});
 
-		avoInspector.showVisualInspector(this, DebuggerMode.bubble);
+        Map<String, AvoEventSchemaType> schema = avoInspector.extractSchema(new HashMap<String, Object>() {{
+            put("String Prop", "Prop Value");
+            put("Float Name", 1.0);
+            put("Bool Name", true);
+        }});
 
-		DebuggerManager visualInspector = avoInspector.getVisualInspector();
+        avoInspector.hideVisualInspector(this);
 
-		AvoInspector.setBatchSize(15);
-		AvoInspector.setBatchFlushSeconds(10);
-	}
+        avoInspector.showVisualInspector(this, VisualInspectorMode.BUBBLE);
 
-	private Object parseValue(String value) {
+        DebuggerManager visualInspector = (DebuggerManager) avoInspector.getVisualInspector();
+
+        AvoInspector.setBatchSize(15);
+        AvoInspector.setBatchFlushSeconds(10);
+    }
+
+    private Object parseValue(String value) {
         if (value == null || value.equals("")) {
             return null;
         }

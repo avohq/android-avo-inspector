@@ -2,14 +2,14 @@ package app.avo.avoinspectorexample
 
 import android.app.Activity
 import android.os.Bundle
-import app.avo.androidanalyticsdebugger.DebuggerMode
+import app.avo.androidanalyticsdebugger.DebuggerManager
 import app.avo.inspector.AvoEventSchemaType
 import app.avo.inspector.AvoEventSchemaType.*
 import app.avo.inspector.AvoInspector
 import app.avo.inspector.AvoInspectorEnv
+import app.avo.inspector.VisualInspectorMode
 
-
-@SuppressWarnings("ALL")
+@SuppressWarnings("unused")
 class KotlinActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +34,11 @@ class KotlinActivity : Activity() {
                 "Float Name" to 1.0,
                 "Bool Name" to true))
 
-        avoInspector.showVisualInspector(this, DebuggerMode.bubble)
+        avoInspector.showVisualInspector(this, VisualInspectorMode.BUBBLE)
 
         avoInspector.hideVisualInspector(this)
 
-        val visualInspector = avoInspector.visualInspector
+        val visualInspector = avoInspector.visualInspector as DebuggerManager
 
         AvoInspector.setBatchSize(15)
         AvoInspector.setBatchFlushSeconds(10)
@@ -59,9 +59,9 @@ class KotlinActivity : Activity() {
             chain.proceed(payload)
         }
         val analytics = Analytics.Builder(applicationContext, "SEGMENT_ANALYTICS_WRITE_KEY")
-                .middleware(avoInspectorMiddleware)
+                .useSourceMiddleware(avoInspectorMiddleware)
                 .build()
-        ***/
+         ***/
     }
 
 }

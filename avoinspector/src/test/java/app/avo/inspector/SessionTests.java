@@ -20,8 +20,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+
 import static org.mockito.Mockito.*;
 
 public class SessionTests {

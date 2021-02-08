@@ -73,7 +73,7 @@ class Util {
     }
 
     public static Map<String, Object> jsonToMap(JSONObject json) {
-        Map<String, Object> retMap = new HashMap<String, Object>();
+        Map<String, Object> retMap = new HashMap<>();
 
         if(json != JSONObject.NULL) {
             retMap = toMap(json);
@@ -82,7 +82,7 @@ class Util {
     }
 
     static Map<String, Object> toMap(JSONObject object) {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
 
         Iterator<String> keysItr = object.keys();
         while(keysItr.hasNext()) {

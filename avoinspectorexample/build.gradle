@@ -1,17 +1,18 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     buildToolsVersion "29.0.3"
     defaultConfig {
-        applicationId "app.avo.avoinspetorexample"
+        applicationId "app.avo.avoinspectorexample"
         minSdkVersion 14
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 4
         versionName "4.1"
         testInstrumentationRunner "AndroidJUnit4"
+
+        missingDimensionStrategy "avoEnvironment", "development", "production"
     }
     buildTypes {
         release {
@@ -33,15 +34,15 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
     implementation 'com.segment.analytics.android:analytics:4.8.2'
-
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test:runner:1.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':avoinspector')
+
+    /** When including the Avo Inspector from Jitpack **/
+    // debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.0'
+    // releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.0'
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 repositories {
