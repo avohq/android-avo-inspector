@@ -11,9 +11,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import app.avo.androidanalyticsdebugger.DebuggerManager;
 import app.avo.androidanalyticsdebugger.DebuggerMode;
@@ -96,13 +98,15 @@ public class VisualInspector {
         }
     }
 
-    void showSchemaInVisualInspector(String eventName, Map<String, AvoEventSchemaType> schema) {
+    void showSchemaInVisualInspector(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> schema) {
         List<EventProperty> props = new ArrayList<>();
-        for (Map.Entry<String, AvoEventSchemaType> param : schema.entrySet()) {
-            String name = param.getKey();
-            AvoEventSchemaType value = param.getValue();
-            if (name != null) {
-                props.add(new EventProperty("", name, value != null ? value.getReadableName() : "null"));
+        if (schema != null) {
+            for (Map.Entry<String, AvoEventSchemaType> param : schema.entrySet()) {
+                String name = param.getKey();
+                AvoEventSchemaType value = param.getValue();
+                if (name != null) {
+                    props.add(new EventProperty("", name, value != null ? value.getReadableName() : "null"));
+                }
             }
         }
         if (debugger != null) {

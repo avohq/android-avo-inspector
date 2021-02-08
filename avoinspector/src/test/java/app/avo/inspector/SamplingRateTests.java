@@ -2,8 +2,6 @@ package app.avo.inspector;
 
 import android.os.Handler;
 
-import androidx.annotation.Nullable;
-
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -161,7 +161,7 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public void showVisualInspector(Activity rootActivity, VisualInspectorMode visualInspectorMode) {
+    public void showVisualInspector(@NonNull Activity rootActivity, @NonNull VisualInspectorMode visualInspectorMode) {
         try {
             visualInspector.show(rootActivity, visualInspectorMode);
         } catch (Exception e) {
@@ -170,7 +170,7 @@ public class AvoInspector implements Inspector {
     }
 
     @Override
-    public void hideVisualInspector(Activity rootActivity) {
+    public void hideVisualInspector(@NonNull Activity rootActivity) {
         try {
             visualInspector.hide(rootActivity);
         } catch (Exception e) {
@@ -178,7 +178,7 @@ public class AvoInspector implements Inspector {
         }
     }
 
-    @SuppressWarnings({"unused", "SameParameterValue"})
+    @SuppressWarnings({"SameParameterValue"})
     @NonNull Map<String, AvoEventSchemaType> avoFunctionTrackSchemaFromEvent(@NonNull String eventName, @Nullable Map<String, ?> eventProperties, @NonNull String eventId, @NonNull String eventHash) {
         try {
             if (AvoDeduplicator.shouldRegisterEvent(eventName, eventProperties, true)) {
