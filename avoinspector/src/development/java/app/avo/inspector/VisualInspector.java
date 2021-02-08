@@ -3,6 +3,7 @@ package app.avo.inspector;
 import android.app.Activity;
 import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
@@ -23,16 +24,17 @@ public class VisualInspector {
     @Nullable
     DebuggerManager debugger;
 
-    public VisualInspector(AvoInspectorEnv env, Application application, Activity rootActivityForVisualInspector) {
+    public VisualInspector(@NonNull AvoInspectorEnv env, @NonNull Application application, @Nullable Activity rootActivityForVisualInspector) {
         if (env != AvoInspectorEnv.Prod) {
             debugger = new DebuggerManager(application);
             if (rootActivityForVisualInspector != null) {
-                show(rootActivityForVisualInspector, VisualInspectorMode.bubble);
+                show(rootActivityForVisualInspector, VisualInspectorMode.BUBBLE);
             }
         }
     }
 
-    public @Nullable Object getDebuggerManager() {
+    public @Nullable
+    Object getDebuggerManager() {
         return debugger;
     }
 
@@ -40,7 +42,7 @@ public class VisualInspector {
         if (debugger == null) {
             debugger = new DebuggerManager(rootActivity.getApplication());
         }
-        debugger.showDebugger(rootActivity, visualInspectorMode == VisualInspectorMode.bar ? DebuggerMode.bar : DebuggerMode.bubble);
+        debugger.showDebugger(rootActivity, visualInspectorMode == VisualInspectorMode.BAR ? DebuggerMode.bar : DebuggerMode.bubble);
     }
 
     void hide(Activity rootActivity) {
@@ -64,11 +66,11 @@ public class VisualInspector {
                         valueDescription = new JSONArray((List) value).toString();
                     } else if (value instanceof Map) {
                         try {
-                            valueDescription = new JSONObject((Map)value).toString(1)
+                            valueDescription = new JSONObject((Map) value).toString(1)
                                     .replace("\n", "")
                                     .replace("\\", "");
                         } catch (JSONException ex) {
-                            valueDescription = new JSONObject((Map)value).toString()
+                            valueDescription = new JSONObject((Map) value).toString()
                                     .replace("\\", "");
                         }
                     } else {
@@ -96,7 +98,7 @@ public class VisualInspector {
 
     void showSchemaInVisualInspector(String eventName, Map<String, AvoEventSchemaType> schema) {
         List<EventProperty> props = new ArrayList<>();
-        for (Map.Entry<String, AvoEventSchemaType> param: schema.entrySet()) {
+        for (Map.Entry<String, AvoEventSchemaType> param : schema.entrySet()) {
             String name = param.getKey();
             AvoEventSchemaType value = param.getValue();
             if (name != null) {

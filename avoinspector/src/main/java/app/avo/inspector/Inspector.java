@@ -12,9 +12,9 @@ import java.util.Map;
 @SuppressWarnings("UnusedReturnValue")
 public interface Inspector {
 
-    void showVisualInspector(Activity rootActivity, VisualInspectorMode visualInspectorMode);
+    void showVisualInspector(@NonNull Activity rootActivity, @NonNull VisualInspectorMode visualInspectorMode);
 
-    void hideVisualInspector(Activity rootActivity);
+    void hideVisualInspector(@NonNull Activity rootActivity);
 
     @NonNull
     Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties);

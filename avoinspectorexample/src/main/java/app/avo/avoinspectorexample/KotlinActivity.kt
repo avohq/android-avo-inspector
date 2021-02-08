@@ -9,8 +9,7 @@ import app.avo.inspector.AvoInspector
 import app.avo.inspector.AvoInspectorEnv
 import app.avo.inspector.VisualInspectorMode
 
-
-@SuppressWarnings("ALL")
+@SuppressWarnings("unused")
 class KotlinActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +34,7 @@ class KotlinActivity : Activity() {
                 "Float Name" to 1.0,
                 "Bool Name" to true))
 
-        avoInspector.showVisualInspector(this, VisualInspectorMode.bubble)
+        avoInspector.showVisualInspector(this, VisualInspectorMode.BUBBLE)
 
         avoInspector.hideVisualInspector(this)
 
@@ -60,9 +59,9 @@ class KotlinActivity : Activity() {
             chain.proceed(payload)
         }
         val analytics = Analytics.Builder(applicationContext, "SEGMENT_ANALYTICS_WRITE_KEY")
-                .middleware(avoInspectorMiddleware)
+                .useSourceMiddleware(avoInspectorMiddleware)
                 .build()
-        ***/
+         ***/
     }
 
 }
