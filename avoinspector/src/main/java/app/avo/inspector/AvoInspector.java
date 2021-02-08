@@ -46,7 +46,6 @@ public class AvoInspector implements Inspector {
     @NonNull
     VisualInspector visualInspector;
 
-    @SuppressWarnings("unused")
     AvoInspector(String apiKey, Application application, String envString, @Nullable Activity rootActivityForVisualInspector) {
         this(apiKey, application,
                 envString.toLowerCase().equals("prod") ? AvoInspectorEnv.Prod :
@@ -54,11 +53,11 @@ public class AvoInspector implements Inspector {
                 rootActivityForVisualInspector);
     }
 
-    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env) {
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env) {
         this(apiKey, application, env, null);
     }
 
-    public AvoInspector(String apiKey, Application application, AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
         String appVersionString = "";
         try {
             PackageManager packageManager = application.getPackageManager();

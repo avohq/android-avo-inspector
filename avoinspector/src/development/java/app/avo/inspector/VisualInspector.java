@@ -24,7 +24,7 @@ public class VisualInspector {
     @Nullable
     DebuggerManager debugger;
 
-    public VisualInspector(@NonNull AvoInspectorEnv env, @NonNull Application application, @Nullable Activity rootActivityForVisualInspector) {
+    VisualInspector(@NonNull AvoInspectorEnv env, @NonNull Application application, @Nullable Activity rootActivityForVisualInspector) {
         if (env != AvoInspectorEnv.Prod) {
             debugger = new DebuggerManager(application);
             if (rootActivityForVisualInspector != null) {
@@ -33,26 +33,26 @@ public class VisualInspector {
         }
     }
 
-    public @Nullable
-    Object getDebuggerManager() {
+    @Nullable
+    public Object getDebuggerManager() {
         return debugger;
     }
 
-    void show(Activity rootActivity, VisualInspectorMode visualInspectorMode) {
+    void show(@NonNull Activity rootActivity, @NonNull VisualInspectorMode visualInspectorMode) {
         if (debugger == null) {
             debugger = new DebuggerManager(rootActivity.getApplication());
         }
         debugger.showDebugger(rootActivity, visualInspectorMode == VisualInspectorMode.BAR ? DebuggerMode.bar : DebuggerMode.bubble);
     }
 
-    void hide(Activity rootActivity) {
+    void hide(@NonNull Activity rootActivity) {
         if (debugger != null) {
             debugger.hideDebugger(rootActivity);
         }
     }
 
     @SuppressWarnings("rawtypes")
-    void showEventInVisualInspector(String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
+    void showEventInVisualInspector(@NonNull String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
         List<EventProperty> props = new ArrayList<>();
         if (mapParams != null) {
             for (Map.Entry<String, ?> param : mapParams.entrySet()) {

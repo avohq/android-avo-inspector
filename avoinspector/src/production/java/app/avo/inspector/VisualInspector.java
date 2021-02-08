@@ -13,10 +13,11 @@ import java.util.Map;
  * Empty implementation in the production flavour. Visual inspector is only meant to be used in the development mode.
  */
 public class VisualInspector {
-    public VisualInspector(AvoInspectorEnv env, Application application, Activity rootActivityForVisualInspector) {
+    VisualInspector(@Nullable AvoInspectorEnv env, @Nullable Application application, @Nullable Activity rootActivityForVisualInspector) {
     }
 
-    public @Nullable Object getDebuggerManager() {
+    @Nullable
+    public Object getDebuggerManager() {
         return null;
     }
 
@@ -26,7 +27,6 @@ public class VisualInspector {
     void hide(Activity rootActivity) {
     }
 
-    @SuppressWarnings("rawtypes")
     void showEventInVisualInspector(String eventName, @Nullable Map<String, ?> mapParams, @Nullable JSONObject jsonParams) {
     }
 
