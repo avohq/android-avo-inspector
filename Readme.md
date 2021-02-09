@@ -26,7 +26,8 @@ and in your module build.gradle:
 
 ```
     dependencies {
-        implementation 'com.github.avohq:android-avo-inspector:x.x.x'
+        debugImplementation 'com.github.avohq.android-avo-inspector:dev:TAG' // Includes the visual inspector, a tool useful to monitor your analytics calls when developing
+        releaseImplementation 'com.github.avohq.android-avo-inspector:prod:TAG' // Does not include the visual inspector 
     }
 ```
 
@@ -173,16 +174,16 @@ avoInspector.hideVisualInspector(activity)
 
 ## Advanced usage
 
-You can get an instance of `DebuggerManager` with the following method.
+You can get an instance of `DebuggerManager` when using the `:dev` dependency with the following method. This method will return `null` in the `:prod` dependency.
 
 Java
 ```java
-DebuggerManager visualInspector = avoInspector.getVisualInspector();
+DebuggerManager visualInspector = (DebuggerManager) avoInspector.getVisualInspector();
 ```
 
 Kotlin
 ```kotlin
-val visualInspector = avoInspector.visualInspector
+val visualInspector = avoInspector.visualInspector as DebuggerManager?
 ```
 
 See more about the `DebuggerManager` in [GitHub repo](https://github.com/avohq/android-analytics-debugger)
