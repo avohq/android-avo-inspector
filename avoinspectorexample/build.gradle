@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -40,8 +49,8 @@ dependencies {
     implementation project(path: ':avoinspector')
 
     /** When including the Avo Inspector from Jitpack **/
-    // debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.0'
-    // releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.0'
+    //debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.0'
+    //releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
