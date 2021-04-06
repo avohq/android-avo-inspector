@@ -117,7 +117,7 @@ class AvoBatcher {
         long now = System.currentTimeMillis();
         long millisSinceLastFlushAttempt = now - this.batchFlushAttemptMillis;
 
-        if (batchSize % AvoBatcher.batchSize == 0 || millisSinceLastFlushAttempt >=
+        if (AvoBatcher.batchSize == 0 || batchSize % AvoBatcher.batchSize == 0 || millisSinceLastFlushAttempt >=
                 TimeUnit.SECONDS.toMillis(batchFlushSeconds)) {
             postAllAvailableEvents(false);
         }

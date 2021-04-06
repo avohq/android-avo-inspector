@@ -38,6 +38,10 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -53,6 +57,9 @@ dependencies {
     //releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.mockito:mockito-core:2.28.2"
 }
 repositories {
     mavenCentral()
