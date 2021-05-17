@@ -88,9 +88,10 @@ public class AvoInspector implements Inspector {
         sessionTracker = new AvoSessionTracker(application, avoBatcher);
 
         if (env == AvoInspectorEnv.Dev) {
-            setBatchFlushSeconds(1);
+            setBatchSize(1);
             enableLogging(true);
         } else {
+            setBatchSize(30);
             setBatchFlushSeconds(30);
             enableLogging(false);
         }
@@ -357,7 +358,11 @@ public class AvoInspector implements Inspector {
 
     @SuppressWarnings("WeakerAccess")
     static public void setBatchSize(int newBatchSize) {
-        AvoBatcher.batchSize = newBatchSize;
+        if (newBatchSize < 1) {
+            AvoBatcher.batchSize = 1;
+        } else {
+            AvoBatcher.batchSize = newBatchSize;
+        }
     }
 
     @SuppressWarnings("WeakerAccess")
