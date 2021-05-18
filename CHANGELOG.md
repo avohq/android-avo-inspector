@@ -1,3 +1,7 @@
+## 2.0.1
+
+Disabled batching in the dev mode by default.
+
 ## 2.0.0
 
 Splitting the lib into 2 flavours.
