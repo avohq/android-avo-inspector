@@ -72,7 +72,7 @@ public class InitializationTests {
 
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
-        assertEquals(1, AvoInspector.getBatchFlushSeconds());
+        assertEquals(1, AvoInspector.getBatchSize());
         assertTrue(AvoInspector.isLogging());
     }
 

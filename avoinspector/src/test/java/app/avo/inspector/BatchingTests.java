@@ -336,6 +336,7 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(Runnable.class);
 
         AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
+        AvoBatcher.batchSize = 30;
 
         sut.mainHandler = mock(Handler.class);
 
@@ -370,6 +371,7 @@ public class BatchingTests {
                 = ArgumentCaptor.forClass(Runnable.class);
 
         AvoBatcher sut = new AvoBatcher(mockApplication, mockNetworkCallsHandler);
+        AvoBatcher.batchSize = 30;
 
         sut.mainHandler = mock(Handler.class);
 

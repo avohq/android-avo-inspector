@@ -193,7 +193,7 @@ See more about the `DebuggerManager` in [GitHub repo](https://github.com/avohq/a
 In order to ensure our SDK doesn't have a large impact on performance or battery life it supports event schemas batching.
 
 Default batch size is 30 and default batch flush timeout is 30 seconds.
-In debug mode default batch flush timeout is 1 second, i.e. the SDK batches schemas of events sent withing one second.
+In debug mode batching is disabled.
 
 Java
 ```java
