@@ -15,6 +15,8 @@ class KotlinActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        AvoInspector.setBatchSize(0)
+
         val avoInspector = AvoInspector("MY_API_KEY",
                 application, AvoInspectorEnv.Dev,this)
 
