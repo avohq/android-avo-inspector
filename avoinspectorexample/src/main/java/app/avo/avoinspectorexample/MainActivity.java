@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(view);
 
         final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
-                getApplication(), AvoInspectorEnv.Staging, this);
+                getApplication(), AvoInspectorEnv.Dev, this);
 
         binding.sendEventButton.setOnClickListener(view1 -> {
             String eventName = binding.eventNameInput.getText().toString();

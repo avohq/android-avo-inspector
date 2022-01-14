@@ -1,3 +1,7 @@
+## 2.0.2
+
+Fixed a race condition that caused some of the early events in the app lifecycle to be not reported.
+
 ## 2.0.1
 
 Disabled batching in the dev mode by default.

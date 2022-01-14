@@ -57,6 +57,7 @@ class AvoBatcher {
                 synchronized (events) {
                     SharedPreferences.Editor editor = sharedPrefs.edit();
                     editor.putString(avoInspectorBatchKey, new JSONArray(events).toString()).apply();
+                    events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
                 }
             }
         }).start();
@@ -71,7 +72,7 @@ class AvoBatcher {
 
     void enterForeground() {
         final String savedData = sharedPrefs.getString(avoInspectorBatchKey, null);
-        events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
+
         if (savedData != null) {
             new Thread(new Runnable() {
                 @Override
@@ -91,9 +92,11 @@ class AvoBatcher {
                                 }
 
                                 events.add(event);
-                            } catch (JSONException ignored) {}
+                            } catch (JSONException ignored) {
+                            }
                         }
-                    } catch (JSONException ignored) { }
+                    } catch (JSONException ignored) {
+                    }
                     postAllAvailableEvents(true);
                 }
             }).start();
