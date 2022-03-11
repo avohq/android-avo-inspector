@@ -14,15 +14,8 @@ import androidx.annotation.Nullable;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.sentry.DefaultSentryClientFactory;
-import io.sentry.Sentry;
-import io.sentry.config.Lookup;
-import io.sentry.config.provider.ConfigurationProvider;
 
 import static app.avo.inspector.Util.handleException;
 
@@ -77,8 +70,6 @@ public class AvoInspector implements Inspector {
 
         this.env = env.getName();
         this.apiKey = apiKey;
-
-        setupSentry(appVersionString);
 
         AvoInstallationId installationId = new AvoInstallationId(application);
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
@@ -136,29 +127,6 @@ public class AvoInspector implements Inspector {
             @Override
             public void onLowMemory() {}
         });
-    }
-
-    private void setupSentry(String appVersionString) {
-        try {
-            Lookup lookup = Lookup.getDefaultWithAdditionalProviders(Collections.<ConfigurationProvider>singletonList(new ConfigurationProvider() {
-                @Override
-                public String getProperty(String key) {
-                    if (key.equals(DefaultSentryClientFactory.UNCAUGHT_HANDLER_ENABLED_OPTION)) {
-                        return Boolean.FALSE.toString();
-                    }
-                    return null;
-                }
-            }), new ArrayList<ConfigurationProvider>());
-
-            Sentry.init("https://c88eba7699af4b568fc82fc15128fc7f@o75921.ingest.sentry.io/5394353", new DefaultSentryClientFactory(lookup));
-
-            Sentry.getStoredClient().addTag("App name", appName);
-            Sentry.getStoredClient().addTag("Environment", this.env);
-            Sentry.getStoredClient().addTag("App Version", appVersionString);
-            Sentry.getStoredClient().addTag("App Version Number", this.appVersion.toString());
-            Sentry.getStoredClient().addTag("Lib Version", BuildConfig.VERSION_NAME);
-            Sentry.getStoredClient().addTag("Lib Version Number", (Long.valueOf(BuildConfig.VERSION_CODE)).toString());
-        } catch (Exception ignored) {}
     }
 
     @Override

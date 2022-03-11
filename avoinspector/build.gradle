@@ -2,12 +2,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 32
     buildToolsVersion "29.0.3"
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 30
+        targetSdkVersion 32
         versionCode 4
         versionName "2.0.2"
 
@@ -45,8 +45,6 @@ android {
 
 dependencies {
     developmentApi 'com.github.avohq:android-analytics-debugger:1.0.6'
-
-    implementation 'io.sentry:sentry:1.7.30'
 
     compileOnly 'androidx.appcompat:appcompat:1.2.0'
     testCompileOnly 'androidx.appcompat:appcompat:1.2.0'
