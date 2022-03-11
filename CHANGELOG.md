@@ -1,3 +1,7 @@
+## 2.0.3
+
+Disabled sentry logging
+
 ## 2.0.2
 
 Fixed a race condition that caused some of the early events in the app lifecycle to be not reported.
