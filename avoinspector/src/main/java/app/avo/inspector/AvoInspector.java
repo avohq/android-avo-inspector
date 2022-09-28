@@ -289,7 +289,7 @@ public class AvoInspector implements Inspector {
             try {
                 //noinspection unchecked
                 if (AvoDeduplicator.hasSeenEventParams(eventPropsToCheck, true)) {
-                    Log.w("Avo Inspector", "WARNING! You are trying to extract schema shape that was just reported by your Avo functions. " +
+                    Log.w("Avo Inspector", "WARNING! You are trying to extract schema shape that was just reported by your Avo Codegen. " +
                             "This is an indicator of duplicate inspector reporting. " +
                             "Please reach out to support@avo.app for advice if you are not sure how to handle this.");
                 }
