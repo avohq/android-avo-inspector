@@ -69,13 +69,13 @@ Kotlin
 AvoInspector.enableLogging(true)
 ```
 
-# Integrating with Avo Functions (Avo generated code)
+# Integrating with Avo Codegen
 
 The setup is lightweight and is covered [in this guide](https://www.avo.app/docs/implementation/start-using-inspector-with-avo-functions).
 
-Every event sent with Avo Function after this integration will automatically be sent to the Avo Inspector.
+Every event sent with Avo Function after this integration will automatically be sent to Inspector.
 
-# Sending event schemas for events reported outside of Avo Functions
+# Sending event schemas for events reported outside of Codegen
 
 Whenever you send tracking event call one of the following methods:
 
@@ -83,7 +83,7 @@ Read more in the [Avo documentation](https://www.avo.app/docs/implementation/dev
 
 ### 1.
 
-This methods get actual tracking event parameters, extract schema automatically and send it to the Avo Inspector backend.
+This methods get actual tracking event parameters, extract schema automatically and send it to the Inspector backend.
 It is the easiest way to use the library, just call this method at the same place you call your analytics tools' track methods with the same parameters.
 
 Java
