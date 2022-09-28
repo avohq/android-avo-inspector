@@ -52,7 +52,7 @@ dependencies {
     implementation 'com.segment.analytics.android:analytics:4.8.2'
     implementation project(path: ':avoinspector')
 
-    /** When including Avo Inspector from Jitpack **/
+    /** When including Avo Inspector from Jitpack.io **/
     //debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.0'
     //releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.0'
 
