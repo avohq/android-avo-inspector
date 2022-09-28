@@ -20,8 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import io.sentry.Sentry;
-
 class Util {
 
     static final String AVO_SHARED_PREFS_KEY = "avo_inspector_preferences";
@@ -191,11 +189,6 @@ class Util {
     }
 
     static void handleException(Throwable e, String envName) {
-        try {
-            Sentry.capture(e);
-        } catch (Throwable throwable) {
-            Log.e("Avo Inspector", "Failed to report a crash. Please report to support@avo.app.", e);
-        }
         if (AvoInspectorEnv.Dev.getName().equals(envName)) {
             Log.e("Avo Inspector", "Something went wrong. Please report to support@avo.app.", e);
             throw new RuntimeException(e);

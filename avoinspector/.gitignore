@@ -1,2 +1,4 @@
 /build
 sentry.properties
+/.idea
+local.properties
