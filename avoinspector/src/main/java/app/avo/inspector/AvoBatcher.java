@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -55,9 +56,15 @@ class AvoBatcher {
             @Override
             public void run() {
                 synchronized (events) {
-                    SharedPreferences.Editor editor = sharedPrefs.edit();
-                    editor.putString(avoInspectorBatchKey, new JSONArray(events).toString()).apply();
-                    events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
+                    try {
+                        SharedPreferences.Editor editor = sharedPrefs.edit();
+                        editor.putString(avoInspectorBatchKey, new JSONArray(events).toString()).apply();
+                        events = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
+                    } catch (Throwable ignore) {
+                        if (AvoInspector.isLogging()) {
+                            Log.d("Avo Inspector", "[avo] Avo Inspector: Failed to save events on disk, keeping in memory");
+                        }
+                    }
                 }
             }
         }).start();
@@ -148,17 +155,17 @@ class AvoBatcher {
 
                 networkCallsHandler.reportInspectorWithBatchBody(sendingEvents,
                         new AvoNetworkCallsHandler.Callback() {
-                    @Override
-                    public void call(boolean retry) {
-                        if (clearCache) {
-                            sharedPrefs.edit().remove(avoInspectorBatchKey).apply();
-                        }
+                            @Override
+                            public void call(boolean retry) {
+                                if (clearCache) {
+                                    sharedPrefs.edit().remove(avoInspectorBatchKey).apply();
+                                }
 
-                        if (retry) {
-                            events.addAll(sendingEvents);
-                        }
-                    }
-                });
+                                if (retry) {
+                                    events.addAll(sendingEvents);
+                                }
+                            }
+                        });
             }
         });
     }
