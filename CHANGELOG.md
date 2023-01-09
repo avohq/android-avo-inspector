@@ -1,3 +1,7 @@
+## 2.0.4
+
+Stability improvements
+
 ## 2.0.3
 
 Disabled sentry logging
