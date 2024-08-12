@@ -1,9 +1,9 @@
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
     }
 }
 
@@ -11,12 +11,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.3"
+    compileSdk 34
+    buildToolsVersion = "35.0.0"
     defaultConfig {
         applicationId "app.avo.avoinspectorexample"
-        minSdkVersion 14
-        targetSdkVersion 30
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 4
         versionName "4.1"
         testInstrumentationRunner "AndroidJUnit4"
@@ -30,10 +30,6 @@ android {
         }
     }
 
-    viewBinding {
-        enabled = true
-    }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -42,23 +38,24 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    namespace 'app.avo.avoinspectorexample'
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
 
-    implementation 'com.segment.analytics.android:analytics:4.8.2'
+    implementation 'com.segment.analytics.android:analytics:4.10.1'
     implementation project(path: ':avoinspector')
 
     /** When including the Avo Inspector from Jitpack.io **/
    // debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.4'
    // releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.4'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.json:json:20240303'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:2.28.2"
 }
 repositories {

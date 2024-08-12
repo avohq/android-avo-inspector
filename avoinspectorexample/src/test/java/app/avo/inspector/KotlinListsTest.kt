@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import app.avo.inspector.AvoEventSchemaType.AvoInt
 import app.avo.inspector.AvoEventSchemaType.AvoList
 import app.avo.inspector.AvoEventSchemaType.AvoNull
 import org.json.JSONException
@@ -20,7 +21,7 @@ import java.util.*
 
 class KotlinListsTest {
 
-    lateinit var sut: AvoInspector
+    private lateinit var sut: AvoInspector
 
     @Mock
     lateinit var mockApplication: Application
@@ -64,13 +65,13 @@ class KotlinListsTest {
         val testJsonObj = JSONObject()
         try {
             val items: MutableList<List<*>?> = mutableListOf()
-            testJsonObj.put("list_key", items)
             val nonOptionalList = listOf(1)
-            val optionalList: List<Int>? = listOf(1)
+            val optionalList: List<Int>? = null
 
             items.add(nonOptionalList)
             items.add(optionalList)
 
+            testJsonObj.put("list_key", items)
         } catch (e: JSONException) {
             e.printStackTrace()
         }
@@ -79,7 +80,7 @@ class KotlinListsTest {
         for (key in schema.keys) {
             val value = schema[key]
             val expected = AvoList(HashSet())
-            expected.subtypes.add(AvoList(HashSet()))
+            expected.subtypes.add(AvoList(HashSet(listOf(AvoInt())) as Set<AvoEventSchemaType>))
             expected.subtypes.add(AvoNull())
             Assert.assertEquals(expected, value)
         }

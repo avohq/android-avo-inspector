@@ -2,14 +2,14 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "29.0.3"
+    compileSdk 34
+    buildToolsVersion = "35.0.0"
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 32
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 4
-        versionName "2.0.4"
+        versionName "2.1.0"
 
         testInstrumentationRunner "AndroidJUnit4"
         consumerProguardFiles 'consumer-rules.pro'
@@ -25,8 +25,6 @@ android {
         }
     }
 
-    defaultPublishConfig "developmentRelease"
-
     flavorDimensions "avoEnvironment"
 
     productFlavors {
@@ -41,17 +39,22 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    namespace 'app.avo.inspector'
 }
 
 dependencies {
-    developmentApi 'com.github.avohq:android-analytics-debugger:1.0.6'
+    implementation 'androidx.annotation:annotation-jvm:1.8.2'
+    developmentApi 'com.github.avohq:android-analytics-debugger:1.1.0' // 1.2.0
 
-    compileOnly 'androidx.appcompat:appcompat:1.2.0'
-    testCompileOnly 'androidx.appcompat:appcompat:1.2.0'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     // for a specific test case with segment
-    testImplementation 'com.segment.analytics.android:analytics:4.8.2'
-    testImplementation 'org.json:json:20190722'
+    testImplementation 'com.segment.analytics.android:analytics:4.10.1'
+    testImplementation 'org.json:json:20240303'
     testImplementation "org.mockito:mockito-core:2.28.2"
 }
 
@@ -59,7 +62,7 @@ afterEvaluate {
     publishing {
         publications {
             production(MavenPublication) {
-                from components.productionRelease
+                from components.findByName('productionRelease')
 
                 groupId = 'com.github.avohq'
                 artifactId = 'prod'
@@ -67,7 +70,7 @@ afterEvaluate {
             }
 
             development(MavenPublication) {
-                from components.developmentRelease
+                from components.findByName('developmentRelease')
 
                 groupId = 'com.github.avohq'
                 artifactId = 'dev'
