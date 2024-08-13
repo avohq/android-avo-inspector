@@ -55,7 +55,7 @@ public class ListExtractionTests {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
         when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
         when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
@@ -74,13 +74,13 @@ public class ListExtractionTests {
 
             short sh = 1;
             byte bt = 2;
-            items.put(new Integer(3));
+            items.put(Integer.valueOf(3));
             items.put(4);
             items.put(5L);
-            items.put(new Long(6));
-            items.put( new Short("7"));
+            items.put(Long.valueOf(6));
+            items.put(Short.valueOf("7"));
             items.put(sh);
-            items.put(new Byte("8"));
+            items.put(Byte.valueOf("8"));
             items.put(bt);
             items.put("Str");
             items.put(new Character('b'));
@@ -111,13 +111,13 @@ public class ListExtractionTests {
 
             short sh = 1;
             byte bt = 2;
-            items.add(new Integer(3));
+            items.add(Integer.valueOf(3));
             items.add(4);
             items.add(5L);
-            items.add(new Long(6));
-            items.add( new Short("7"));
+            items.add(Long.valueOf(6));
+            items.add(Short.valueOf("7"));
             items.add(sh);
-            items.add(new Byte("8"));
+            items.add(Byte.valueOf("8"));
             items.add(bt);
             items.add("Str");
             items.add(new Character('b'));
@@ -145,7 +145,7 @@ public class ListExtractionTests {
             int[] items = new int[3];
             testJsonObj.put("array_key", items);
 
-            items[0] = new Integer(3);
+            items[0] = Integer.valueOf(3);
             items[1] = (short)1;
             items[2] = 5;
         } catch (JSONException e) {

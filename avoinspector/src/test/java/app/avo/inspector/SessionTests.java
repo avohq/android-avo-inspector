@@ -54,7 +54,7 @@ public class SessionTests {
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
         when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
         when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
@@ -135,7 +135,7 @@ public class SessionTests {
 
     @Test
     public void readsLastSessionIdFromPrefs() {
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("stored session id");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("stored session id");
 
         new AvoSessionTracker(mockApplication, mockBatcher);
 
@@ -144,7 +144,7 @@ public class SessionTests {
 
     @Test
     public void createsSessionIdIfNothingStoredInPrefs() {
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn(null);
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn(null);
 
         new AvoSessionTracker(mockApplication, mockBatcher);
 

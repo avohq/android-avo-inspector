@@ -209,7 +209,7 @@ public class BatchingTests {
         Thread.sleep(500);
 
         // Then
-        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, Object>>anyList(),
+        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.anyList(),
                 any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
 
@@ -324,7 +324,7 @@ public class BatchingTests {
         Thread.sleep(500);
 
         // Then
-        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.<Map<String, Object>>anyList(),
+        verify(mockNetworkCallsHandler, never()).reportInspectorWithBatchBody(ArgumentMatchers.anyList(),
                 any(AvoNetworkCallsHandler.Callback.class));
         assertEquals(0, sut.events.size());
         assertEquals(0, sut.batchFlushAttemptMillis);

@@ -17,5 +17,8 @@ allprojects {
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
+    tasks.withType(JavaCompile) {
+        options.deprecation = true
+    }
 }
 

@@ -6,7 +6,7 @@ public enum AvoInspectorEnv {
     Dev("dev"),
     Staging("staging");
 
-    private String name;
+    private final String name;
 
     AvoInspectorEnv(String name) {
         this.name = name;

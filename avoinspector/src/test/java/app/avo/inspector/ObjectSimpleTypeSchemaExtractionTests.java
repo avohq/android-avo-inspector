@@ -48,7 +48,7 @@ public class ObjectSimpleTypeSchemaExtractionTests {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
@@ -162,7 +162,7 @@ public class ObjectSimpleTypeSchemaExtractionTests {
         boolean v1;
 
         public BooleanSchema() {
-            this.v0 = new Boolean(true);
+            this.v0 = Boolean.TRUE;
             this.v1 = false;
         }
     }

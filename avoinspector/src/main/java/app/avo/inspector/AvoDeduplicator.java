@@ -10,13 +10,13 @@ import static app.avo.inspector.Util.mapsEqual;
 
 class AvoDeduplicator {
 
-	private static ConcurrentHashMap<Long, String> avoFunctionsEvents = new ConcurrentHashMap<>();
-	private static ConcurrentHashMap<Long, String> manualEvents = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<Long, String> avoFunctionsEvents = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<Long, String> manualEvents = new ConcurrentHashMap<>();
 
-	private static ConcurrentHashMap<String, Map<String, ?>> avoFunctionsEventsParams = new ConcurrentHashMap<>();
-	private static ConcurrentHashMap<String, Map<String, ?>> manualEventsParams = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, Map<String, ?>> avoFunctionsEventsParams = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, Map<String, ?>> manualEventsParams = new ConcurrentHashMap<>();
 
-	private static AvoSchemaExtractor avoSchemaExtractor = new AvoSchemaExtractor();
+	private static final AvoSchemaExtractor avoSchemaExtractor = new AvoSchemaExtractor();
 
 	static boolean shouldRegisterEvent(String eventName, Map<String, ?> params, boolean fromAvoFunction) {
 		clearOldEvents();
@@ -102,13 +102,9 @@ class AvoDeduplicator {
 	}
 
 	private static boolean hasSameShapeInAvoFunctionsAs(String eventName, Map<String, AvoEventSchemaType> shapes) {
-		boolean result = false;
+		boolean result = lookForEventSchemaIn(eventName, shapes, avoFunctionsEventsParams);
 
-		if (lookForEventSchemaIn(eventName, shapes, avoFunctionsEventsParams)) {
-			result = true;
-		}
-
-		if (result) {
+        if (result) {
 			avoFunctionsEventsParams.remove(eventName);
 		}
 

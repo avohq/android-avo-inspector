@@ -48,8 +48,8 @@ public class VisualDebuggerTests {
 	@Mock
 	DebuggerManager mockDebugger;
 
-	private Map<String, Map<String, Number>> testMap = new ConcurrentHashMap<>();
-	private Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
+	private final Map<String, Map<String, Number>> testMap = new ConcurrentHashMap<>();
+	private final Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
 
 	@Before
 	public void setUp() throws Exception {
@@ -61,7 +61,7 @@ public class VisualDebuggerTests {
 		when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
 		when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
 		when(mockSharedPrefs.edit()).thenReturn(mockEditor);
-		when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+		when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
 		when(mockEditor.putLong(anyString(), anyLong())).thenReturn(mockEditor);
 		when(mockEditor.putString(anyString(), anyString())).thenReturn(mockEditor);
 		when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
@@ -72,13 +72,13 @@ public class VisualDebuggerTests {
 		Map<String, Number> nestedMap = new ConcurrentHashMap<>();
 		short sh = 1;
 		byte bt = 2;
-		nestedMap.put("v0", new Integer(3));
+		nestedMap.put("v0", Integer.valueOf(3));
 		nestedMap.put("v1", 4);
 		nestedMap.put("v2", 5L);
-		nestedMap.put("v3", new Long(6));
-		nestedMap.put("v4", new Short("7"));
+		nestedMap.put("v3", Long.valueOf(6));
+		nestedMap.put("v4", Short.valueOf("7"));
 		nestedMap.put("v5", sh);
-		nestedMap.put("v6", new Byte("8"));
+		nestedMap.put("v6", Byte.valueOf("8"));
 		nestedMap.put("v7", bt);
 
 		testMap.put("nested", nestedMap);

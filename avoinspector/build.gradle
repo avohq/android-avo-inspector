@@ -16,6 +16,10 @@ android {
 
         buildConfigField 'int', 'VERSION_CODE', "${versionCode}"
         buildConfigField 'String', 'VERSION_NAME', "\"${versionName}\""
+
+        aarMetadata {
+            minCompileSdk = 21
+        }
     }
 
     buildTypes {
@@ -25,7 +29,7 @@ android {
         }
     }
 
-    flavorDimensions "avoEnvironment"
+    flavorDimensions += "avoEnvironment"
 
     productFlavors {
         production {
@@ -66,7 +70,7 @@ afterEvaluate {
 
                 groupId = 'com.github.avohq'
                 artifactId = 'prod'
-                version = '2.0.4'
+                version = '2.0.9'
             }
 
             development(MavenPublication) {
@@ -74,7 +78,7 @@ afterEvaluate {
 
                 groupId = 'com.github.avohq'
                 artifactId = 'dev'
-                version = '2.0.4'
+                version = '2.0.9'
             }
         }
     }
