@@ -45,7 +45,7 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
 
     implementation 'com.segment.analytics.android:analytics:4.10.1'
     implementation project(path: ':avoinspector')
@@ -53,6 +53,8 @@ dependencies {
     /** When including the Avo Inspector from Jitpack.io **/
   //  debugImplementation 'com.github.avohq.android-avo-inspector:dev:update-dependencies-and-tools-SNAPSHOT'
   //  releaseImplementation 'com.github.avohq.android-avo-inspector:prod:update-dependencies-and-tools-SNAPSHOT'
+
+    //debugImplementation 'com.github.avohq:android-avo-inspector:dev:update-dependencies-and-tools-da20869e6d-1'
 
     testImplementation 'org.json:json:20240303'
     testImplementation 'junit:junit:4.13.2'
