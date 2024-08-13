@@ -18,7 +18,7 @@ jobs:
       - name: Set up Android Java project environment
         uses: actions/setup-java@v1
         with:
-          java-version: 1.8
+          java-version: 17
 
       - name: Run tests
         run: ./gradlew --warning-mode=none testDevelopmentReleaseUnitTest
