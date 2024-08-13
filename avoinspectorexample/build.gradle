@@ -51,8 +51,8 @@ dependencies {
     implementation project(path: ':avoinspector')
 
     /** When including the Avo Inspector from Jitpack.io **/
-   // debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.0.4'
-   // releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.0.4'
+  //  debugImplementation 'com.github.avohq.android-avo-inspector:dev:update-dependencies-and-tools-SNAPSHOT'
+  //  releaseImplementation 'com.github.avohq.android-avo-inspector:prod:update-dependencies-and-tools-SNAPSHOT'
 
     testImplementation 'org.json:json:20240303'
     testImplementation 'junit:junit:4.13.2'
