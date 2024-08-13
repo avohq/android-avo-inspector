@@ -49,7 +49,7 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation-jvm:1.8.2'
-    developmentApi 'com.github.avohq:android-analytics-debugger:1.1.0' // 1.2.0
+    developmentApi 'com.github.avohq:android-analytics-debugger:1.2.0'
 
     testImplementation 'junit:junit:4.13.2'
     // for a specific test case with segment
