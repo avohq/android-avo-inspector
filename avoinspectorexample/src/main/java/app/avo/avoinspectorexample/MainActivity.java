@@ -3,7 +3,7 @@ package app.avo.avoinspectorexample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
+import android.widget.TextView;
 
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Middleware;
@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.avo.androidanalyticsdebugger.DebuggerManager;
-import app.avo.avoinspectorexample.databinding.ActivityMainBinding;
 import app.avo.inspector.AvoEventSchemaType;
 import app.avo.inspector.AvoInspector;
 import app.avo.inspector.AvoInspectorEnv;
@@ -24,39 +23,35 @@ import app.avo.inspector.VisualInspectorMode;
 @SuppressWarnings("unused")
 public class MainActivity extends AppCompatActivity {
 
-    ActivityMainBinding binding;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
+        setContentView(R.layout.activity_main);
 
         final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
                 getApplication(), AvoInspectorEnv.Dev, this);
 
-        binding.sendEventButton.setOnClickListener(view1 -> {
-            String eventName = binding.eventNameInput.getText().toString();
+        findViewById(R.id.send_event_button).setOnClickListener(view1 -> {
+            String eventName = ((TextView)findViewById(R.id.event_name_input)).getText().toString();
 
-            String paramName0 = binding.paramNameInput0.getText().toString();
-            Object paramValue0 = parseValue(binding.paramValueInput0.getText().toString());
+            String paramName0 = ((TextView)findViewById(R.id.param_name_input_0)).getText().toString();
+            Object paramValue0 = parseValue(((TextView)findViewById(R.id.param_value_input_0)).getText().toString());
 
-            String paramName1 = binding.paramNameInput1.getText().toString();
-            Object paramValue1 = parseValue(binding.paramValueInput1.getText().toString());
+            String paramName1 = ((TextView)findViewById(R.id.param_name_input_1)).getText().toString();
+            Object paramValue1 = parseValue(((TextView)findViewById(R.id.param_value_input_1)).getText().toString());
 
-            String paramName2 = binding.paramNameInput2.getText().toString();
-            Object paramValue2 = parseValue(binding.paramValueInput2.getText().toString());
+            String paramName2 = ((TextView)findViewById(R.id.param_name_input_2)).getText().toString();
+            Object paramValue2 = parseValue(((TextView)findViewById(R.id.param_value_input_2)).getText().toString());
 
-            String paramName3 = binding.paramNameInput3.getText().toString();
-            Object paramValue3 = parseValue(binding.paramValueInput3.getText().toString());
+            String paramName3 = ((TextView)findViewById(R.id.param_name_input_3)).getText().toString();
+            Object paramValue3 = parseValue(((TextView)findViewById(R.id.param_value_input_3)).getText().toString());
 
-            String paramName4 = binding.paramNameInput4.getText().toString();
-            Object paramValue4 = parseValue(binding.paramValueInput4.getText().toString());
+            String paramName4 = ((TextView)findViewById(R.id.param_name_input_4)).getText().toString();
+            Object paramValue4 = parseValue(((TextView)findViewById(R.id.param_value_input_4)).getText().toString());
 
-            String paramName5 = binding.paramNameInput5.getText().toString();
-            Object paramValue5 = parseValue(binding.paramValueInput5.getText().toString());
+            String paramName5 = ((TextView)findViewById(R.id.param_name_input_5)).getText().toString();
+            Object paramValue5 = parseValue(((TextView)findViewById(R.id.param_value_input_5)).getText().toString());
 
             Map<String, Object> params = new HashMap<>();
             params.put(paramName0, paramValue0);
@@ -129,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Object parseValue(String value) {
-        if (value == null || value.equals("")) {
+        if (value == null || value.isEmpty()) {
             return null;
         }
 
@@ -171,11 +166,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (value.contains("f")) {
                 return Float.parseFloat(value);
             } else return Double.parseDouble(value);
-        } else if (value.toLowerCase().equals("true")) {
+        } else if (value.equalsIgnoreCase("true")) {
             return true;
-        } else if (value.toLowerCase().equals("false")) {
+        } else if (value.equalsIgnoreCase("false")) {
             return false;
-        } else if (value.toLowerCase().equals("null")) {
+        } else if (value.equalsIgnoreCase("null")) {
             return null;
         }
 

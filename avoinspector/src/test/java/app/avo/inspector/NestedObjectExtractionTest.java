@@ -54,7 +54,7 @@ public class NestedObjectExtractionTest {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
         when(mockSharedPrefs.edit()).thenReturn(mockEditor);
@@ -90,13 +90,13 @@ public class NestedObjectExtractionTest {
         Map nestedMap = new ConcurrentHashMap();
         short sh = 1;
         byte bt = 2;
-        nestedMap.put("v0", new Integer(3));
+        nestedMap.put("v0", Integer.valueOf(3));
         nestedMap.put("v1", 4);
         nestedMap.put("v2", 5L);
-        nestedMap.put("v3", new Long(6));
-        nestedMap.put("v4", new Short("7"));
+        nestedMap.put("v3", Long.valueOf(6));
+        nestedMap.put("v4", Short.valueOf("7"));
         nestedMap.put("v5", sh);
-        nestedMap.put("v6", new Byte("8"));
+        nestedMap.put("v6", Byte.valueOf("8"));
         nestedMap.put("v7", bt);
 
         testMap.put("nested", nestedMap);
@@ -129,13 +129,13 @@ public class NestedObjectExtractionTest {
         Map doubleNestedMap = new HashMap();
         short sh = 1;
         byte bt = 2;
-        doubleNestedMap.put("v0", new Integer(3));
+        doubleNestedMap.put("v0", Integer.valueOf(3));
         doubleNestedMap.put("v1", 4);
         doubleNestedMap.put("v2", 5L);
-        doubleNestedMap.put("v3", new Long(6));
-        doubleNestedMap.put("v4", new Short("7"));
+        doubleNestedMap.put("v3", Long.valueOf(6));
+        doubleNestedMap.put("v4", Short.valueOf("7"));
         doubleNestedMap.put("v5", sh);
-        doubleNestedMap.put("v6", new Byte("8"));
+        doubleNestedMap.put("v6", Byte.valueOf("8"));
         doubleNestedMap.put("v7", bt);
 
         nestedMap.put("double_nested", doubleNestedMap);

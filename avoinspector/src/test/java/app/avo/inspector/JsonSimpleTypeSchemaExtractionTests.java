@@ -50,7 +50,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
-        when(mockSharedPrefs.getString(anyString(), (String) eq(null))).thenReturn("");
+        when(mockSharedPrefs.getString(anyString(), eq(null))).thenReturn("");
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
@@ -68,13 +68,13 @@ public class JsonSimpleTypeSchemaExtractionTests {
         try {
             short sh = 1;
             byte bt = 2;
-            testJsonObj.put("v0", new Integer(3));
+            testJsonObj.put("v0", Integer.valueOf(3));
             testJsonObj.put("v1", 4);
             testJsonObj.put("v2", 5L);
-            testJsonObj.put("v3", new Long(6));
-            testJsonObj.put("v4", new Short("7"));
+            testJsonObj.put("v3", Long.valueOf(6));
+            testJsonObj.put("v4", Short.valueOf("7"));
             testJsonObj.put("v5", sh);
-            testJsonObj.put("v6", new Byte("8"));
+            testJsonObj.put("v6", Byte.valueOf("8"));
             testJsonObj.put("v7", bt);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -117,7 +117,7 @@ public class JsonSimpleTypeSchemaExtractionTests {
     public void canExtractBoolean() {
         JSONObject testJsonObj = new JSONObject();
         try {
-            testJsonObj.put("v0", new Boolean(true));
+            testJsonObj.put("v0", Boolean.TRUE);
             testJsonObj.put("v1", false);
         } catch (JSONException e) {
             e.printStackTrace();

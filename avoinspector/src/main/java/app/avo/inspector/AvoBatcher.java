@@ -31,7 +31,7 @@ class AvoBatcher {
 
     volatile long batchFlushAttemptMillis = System.currentTimeMillis();
 
-    private SharedPreferences sharedPrefs;
+    private final SharedPreferences sharedPrefs;
 
     AvoNetworkCallsHandler networkCallsHandler;
 

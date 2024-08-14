@@ -16,8 +16,8 @@ class AvoSessionTracker {
     static final String sessionStartKey = "avo_inspector_session_start_key";
     static final String sessionIdKey = "avo_inspector_session_id_key";
 
-    private SharedPreferences sharedPreferences;
-    private AvoBatcher avoBatcher;
+    private final SharedPreferences sharedPreferences;
+    private final AvoBatcher avoBatcher;
 
     AvoSessionTracker(Context context, AvoBatcher avoBatcher) {
         this.sharedPreferences = context.getSharedPreferences(Util.AVO_SHARED_PREFS_KEY, Context.MODE_PRIVATE);

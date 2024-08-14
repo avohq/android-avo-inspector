@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static app.avo.inspector.Util.handleException;
 
+@SuppressWarnings("unchecked")
 public class AvoInspector implements Inspector {
 
     private static boolean logsEnabled = false;
@@ -41,8 +42,8 @@ public class AvoInspector implements Inspector {
 
     AvoInspector(String apiKey, Application application, String envString, @Nullable Activity rootActivityForVisualInspector) {
         this(apiKey, application,
-                envString.toLowerCase().equals("prod") ? AvoInspectorEnv.Prod :
-                        envString.toLowerCase().equals("staging") ? AvoInspectorEnv.Staging : AvoInspectorEnv.Dev,
+                envString.equalsIgnoreCase("prod") ? AvoInspectorEnv.Prod :
+                        envString.equalsIgnoreCase("staging") ? AvoInspectorEnv.Staging : AvoInspectorEnv.Dev,
                 rootActivityForVisualInspector);
     }
 
@@ -50,6 +51,7 @@ public class AvoInspector implements Inspector {
         this(apiKey, application, env, null);
     }
 
+    @SuppressWarnings("deprecation")
     public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
         String appVersionString = "";
         try {
@@ -58,6 +60,7 @@ public class AvoInspector implements Inspector {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 appVersion = pInfo.getLongVersionCode();
             } else {
+                //noinspection deprecation
                 appVersion = (long) pInfo.versionCode;
             }
             appVersionString = pInfo.versionName;
@@ -222,7 +225,7 @@ public class AvoInspector implements Inspector {
 
     private void logPreExtract(@NonNull String eventName, @Nullable Object eventProperties) {
         if (isLogging() && eventProperties != null) {
-            Log.d("Avo Inspector", "Supplied event " + eventName + " with params \n" + eventProperties.toString());
+            Log.d("Avo Inspector", "Supplied event " + eventName + " with params \n" + eventProperties);
         }
     }
 
