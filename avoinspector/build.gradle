@@ -49,6 +49,13 @@ android {
         buildConfig true
     }
 
+    publishing {
+        multipleVariants {
+            allVariants()
+            withJavadocJar()
+        }
+    }
+
     namespace 'app.avo.inspector'
 }
 
@@ -71,7 +78,7 @@ afterEvaluate {
 
                 groupId = 'com.github.avohq'
                 artifactId = 'prod'
-                version = '2.0.9'
+                version = '2.1.0'
             }
 
             development(MavenPublication) {
@@ -79,7 +86,7 @@ afterEvaluate {
 
                 groupId = 'com.github.avohq'
                 artifactId = 'dev'
-                version = '2.0.9'
+                version = '2.1.0'
             }
         }
     }
