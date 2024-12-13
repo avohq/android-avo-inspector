@@ -25,7 +25,7 @@ public class AvoInspector implements Inspector {
     private static boolean logsEnabled = false;
 
     String apiKey;
-    Long appVersion = null;
+    @Nullable String appVersionString = null;
     String appName;
     int libVersion = BuildConfig.VERSION_CODE;
 
@@ -53,17 +53,20 @@ public class AvoInspector implements Inspector {
 
     @SuppressWarnings("deprecation")
     public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
-        String appVersionString = "";
         try {
             PackageManager packageManager = application.getPackageManager();
             PackageInfo pInfo = packageManager.getPackageInfo(application.getPackageName(), 0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                appVersion = pInfo.getLongVersionCode();
-            } else {
-                //noinspection deprecation
-                appVersion = (long) pInfo.versionCode;
-            }
+
             appVersionString = pInfo.versionName;
+
+            if (!appVersionString.matches("^(?:[\\w-]+-)?(\\d+\\.\\d+\\.\\d+(?:-[\\w.-]+)?(?:\\+[\\w.-]+)?)$")) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    appVersionString = pInfo.getLongVersionCode() + "";
+                } else {
+                    //noinspection deprecation
+                    appVersionString = pInfo.versionCode + "";
+                }
+            }
         } catch (PackageManager.NameNotFoundException ignored) {}
 
         avoSchemaExtractor = new AvoSchemaExtractor();
@@ -76,7 +79,7 @@ public class AvoInspector implements Inspector {
 
         AvoInstallationId installationId = new AvoInstallationId(application);
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
-                apiKey, env.getName(), appName, appVersion.toString(), libVersion + "",
+                apiKey, env.getName(), appName, appVersionString, libVersion + "",
                 installationId.installationId);
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
         sessionTracker = new AvoSessionTracker(application, avoBatcher);

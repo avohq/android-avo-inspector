@@ -60,6 +60,8 @@ public class BatchingTests {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
+        mockPackageInfo.versionName = "myVersion";
+
         when(mockApplication.getPackageManager()).thenReturn(mockPackageManager);
         when(mockApplication.getPackageName()).thenReturn("");
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);

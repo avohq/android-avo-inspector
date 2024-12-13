@@ -35,6 +35,8 @@ public class InitializationTests {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
+        mockPackageInfo.versionName = "myVersion";
+
         when(mockApplication.getPackageManager()).thenReturn(mockPackageManager);
         when(mockApplication.getPackageName()).thenReturn("");
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
@@ -53,7 +55,7 @@ public class InitializationTests {
 
         sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
 
-        assertEquals(10L, (long)sut.appVersion);
+        assertEquals("10", sut.appVersionString);
         assertEquals("apiKey", sut.apiKey);
         assertEquals("testPckg", sut.appName);
         assertEquals(4, sut.libVersion);
@@ -63,6 +65,39 @@ public class InitializationTests {
         assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
         assertEquals("4", sut.avoBatcher.networkCallsHandler.libVersion);
         assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
+    }
+
+    @Test
+    public void initWithSemanticVersion() {
+        String[] versionNames = {
+                "1.2.3",
+                "1.2.3-alpha",
+                "1.2.3-alpha+build.45",
+                "1.2.3+exp.sha.5114f85",
+                "1.2.3+10",
+                "MICROFRONTEND-1.2.3",
+                "1.not.semantic.9"
+        };
+
+        for (String versionName : versionNames) {
+            mockPackageInfo.versionName = versionName;
+            mockApplicationInfo.packageName = "testPckg";
+
+            sut = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
+
+            String expectedVersionName = versionName.equals("1.not.semantic.9") ? "0" : versionName;
+
+            assertEquals(expectedVersionName, sut.appVersionString);
+            assertEquals("apiKey", sut.apiKey);
+            assertEquals("testPckg", sut.appName);
+            assertEquals(4, sut.libVersion);
+
+            assertEquals(expectedVersionName, sut.avoBatcher.networkCallsHandler.appVersion);
+            assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
+            assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
+            assertEquals("4", sut.avoBatcher.networkCallsHandler.libVersion);
+            assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
+        }
     }
 
     @Test
