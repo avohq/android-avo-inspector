@@ -70,11 +70,13 @@ public class InitializationTests {
     @Test
     public void initWithSemanticVersion() {
         String[] versionNames = {
-            "1.2.3",
-            "1.2.3-alpha",
-            "1.2.3-alpha+build.45",
-            "1.2.3+exp.sha.5114f85",
-            "1.not.semantic.9"
+                "1.2.3",
+                "1.2.3-alpha",
+                "1.2.3-alpha+build.45",
+                "1.2.3+exp.sha.5114f85",
+                "1.2.3+10",
+                "MICROFRONTEND-1.2.3",
+                "1.not.semantic.9"
         };
 
         for (String versionName : versionNames) {

@@ -59,7 +59,7 @@ public class AvoInspector implements Inspector {
 
             appVersionString = pInfo.versionName;
 
-            if (!appVersionString.matches("^\\d+\\.\\d+\\.\\d+(?:-[\\w.-]+)?(?:\\+[\\w.-]+)?$")) {
+            if (!appVersionString.matches("^(?:[\\w-]+-)?(\\d+\\.\\d+\\.\\d+(?:-[\\w.-]+)?(?:\\+[\\w.-]+)?)$")) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     appVersionString = pInfo.getLongVersionCode() + "";
                 } else {
