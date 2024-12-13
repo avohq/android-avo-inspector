@@ -45,6 +45,8 @@ class KotlinListsTest {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
 
+        mockPackageInfo.versionName = "myVersion"
+
         Mockito.`when`(mockApplication.packageManager).thenReturn(mockPackageManager)
         Mockito.`when`(mockApplication.packageName).thenReturn("")
         Mockito.`when`(mockPackageManager.getPackageInfo(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenReturn(mockPackageInfo)

@@ -50,6 +50,7 @@ public class InitializationTests {
 
     @Test
     public void initWithProperParameters() {
+        //noinspection deprecation
         mockPackageInfo.versionCode = 10;
         mockApplicationInfo.packageName = "testPckg";
 
@@ -58,12 +59,12 @@ public class InitializationTests {
         assertEquals("10", sut.appVersionString);
         assertEquals("apiKey", sut.apiKey);
         assertEquals("testPckg", sut.appName);
-        assertEquals(4, sut.libVersion);
+        assertEquals(5, sut.libVersion);
 
         assertEquals("10", sut.avoBatcher.networkCallsHandler.appVersion);
         assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
         assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
-        assertEquals("4", sut.avoBatcher.networkCallsHandler.libVersion);
+        assertEquals("5", sut.avoBatcher.networkCallsHandler.libVersion);
         assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
     }
 
@@ -90,12 +91,12 @@ public class InitializationTests {
             assertEquals(expectedVersionName, sut.appVersionString);
             assertEquals("apiKey", sut.apiKey);
             assertEquals("testPckg", sut.appName);
-            assertEquals(4, sut.libVersion);
+            assertEquals(5, sut.libVersion);
 
             assertEquals(expectedVersionName, sut.avoBatcher.networkCallsHandler.appVersion);
             assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
             assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
-            assertEquals("4", sut.avoBatcher.networkCallsHandler.libVersion);
+            assertEquals("5", sut.avoBatcher.networkCallsHandler.libVersion);
             assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
         }
     }
