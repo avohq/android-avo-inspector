@@ -35,8 +35,6 @@ public class AppVisibilityTests {
     @Mock
     ApplicationInfo mockApplicationInfo;
     @Mock
-    AvoSessionTracker mockSessionTracker;
-    @Mock
     SharedPreferences mockSharedPrefs;
     @Mock
     SharedPreferences.Editor mockEditor;
@@ -75,7 +73,6 @@ public class AppVisibilityTests {
 
         // When
         AvoInspector sut = new AvoInspector("api key", mockApplication, AvoInspectorEnv.Dev);
-        sut.sessionTracker = mockSessionTracker;
 
         // Then
         verify(mockApplication).registerActivityLifecycleCallbacks(activityLifecycleCallbackCaptor.capture());

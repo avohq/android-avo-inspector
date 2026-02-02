@@ -344,7 +344,7 @@ public class BatchingTests {
 
         //When
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            sut.batchSessionStarted();
+            sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
         }
 
         // Then
@@ -383,7 +383,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis + 1000;
 
         //When
-        sut.batchSessionStarted();
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
 
         // Then
         verify(sut.mainHandler, never()).post(any(Runnable.class)); // the handler does not run, so we adjust batchFlushAttemptMillis every time manually
@@ -392,7 +392,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis;
 
         //When
-        sut.batchSessionStarted();
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -401,7 +401,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis();
 
         //When
-        sut.batchSessionStarted();
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -410,7 +410,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis;
 
         //When
-        sut.batchSessionStarted();
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
 
         // Then
         verify(sut.mainHandler, times(2)).post(any(Runnable.class));

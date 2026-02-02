@@ -42,8 +42,6 @@ public class InitializationTests {
         when(mockPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(mockPackageInfo);
         when(mockApplication.getApplicationInfo()).thenReturn(mockApplicationInfo);
         when(mockApplication.getSharedPreferences(anyString(), anyInt())).thenReturn(mockSharedPrefs);
-        when(mockSharedPrefs.getString(eq(AvoInstallationId.cacheKey), anyString())).thenReturn("testInstallationId");
-        when(mockSharedPrefs.getString(eq(AvoSessionTracker.sessionIdKey), eq(null))).thenReturn("");
         when(mockApplication.getApplicationContext()).thenReturn(mockApplication);
         when(mockApplication.getContentResolver()).thenReturn(mock(ContentResolver.class));
     }
@@ -65,7 +63,6 @@ public class InitializationTests {
         assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
         assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
         assertEquals("5", sut.avoBatcher.networkCallsHandler.libVersion);
-        assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
     }
 
     @Test
@@ -97,7 +94,6 @@ public class InitializationTests {
             assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
             assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
             assertEquals("5", sut.avoBatcher.networkCallsHandler.libVersion);
-            assertEquals("testInstallationId", sut.avoBatcher.networkCallsHandler.installationId);
         }
     }
 
