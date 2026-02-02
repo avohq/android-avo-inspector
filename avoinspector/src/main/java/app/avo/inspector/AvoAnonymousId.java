@@ -3,7 +3,7 @@ package app.avo.inspector;
 public class AvoAnonymousId {
   private static String _anonymousId = null;
   
-  public static String anonymousId() {
+  public static synchronized String anonymousId() {
     if (AvoAnonymousId._anonymousId != null && AvoAnonymousId._anonymousId.length() != 0) {
       return AvoAnonymousId._anonymousId;
     }
@@ -29,7 +29,7 @@ public class AvoAnonymousId {
     return AvoAnonymousId._anonymousId;
   }
   
-  public static void setAnonymousId(String id) {
+  public static synchronized void setAnonymousId(String id) {
     AvoAnonymousId._anonymousId = id;
     try {
       AvoInspector.avoStorage.setItem(AvoAnonymousId.storageKey, AvoAnonymousId._anonymousId);
@@ -40,7 +40,7 @@ public class AvoAnonymousId {
   
   public static final String storageKey = "AvoInspectorAnonymousId";
   
-  public static void clearCache() {
+  public static synchronized void clearCache() {
     AvoAnonymousId._anonymousId = null;
   }
   
