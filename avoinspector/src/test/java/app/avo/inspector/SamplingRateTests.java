@@ -2,6 +2,7 @@ package app.avo.inspector;
 
 import android.os.Handler;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,13 +20,22 @@ import static org.mockito.Mockito.when;
 
 public class SamplingRateTests {
 
+    private AvoStorage prevAvoStorage;
+
     @Before
     public void setUp() {
+        prevAvoStorage = AvoInspector.avoStorage;
         AvoAnonymousId.clearCache();
         AvoStorage mockStorage = mock(AvoStorage.class);
         when(mockStorage.isInitialized()).thenReturn(true);
         when(mockStorage.getItem(any())).thenReturn("testAnonymousId");
         AvoInspector.avoStorage = mockStorage;
+    }
+
+    @After
+    public void tearDown() {
+        AvoInspector.avoStorage = prevAvoStorage;
+        AvoAnonymousId.clearCache();
     }
 
     @Test
