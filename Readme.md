@@ -1,5 +1,6 @@
 # AvoInspector
 
+[![Maven Central](https://img.shields.io/maven-central/v/app.avo/inspector.svg)](https://search.maven.org/artifact/app.avo/inspector)
 [![](https://jitpack.io/v/avohq/android-avo-inspector.svg)](https://jitpack.io/#avohq/android-avo-inspector)
 
 # Avo documentation
@@ -9,26 +10,37 @@ For more information about the Inspector project please read [Avo documentation]
 
 # Installation
 
-We host the library on JitPack.io, so
+## Maven Central
 
-add the following to the root build.gradle:
+Add the following to your module build.gradle:
 
+```groovy
+dependencies {
+    debugImplementation 'app.avo:inspector-dev:2.2.1'    // Includes the visual inspector
+    releaseImplementation 'app.avo:inspector:2.2.1'       // Does not include the visual inspector
+}
 ```
-    allprojects {
-        repositories {
-          ...
-          maven { url 'https://jitpack.io' }
-        }
+
+## JitPack
+
+Add the following to the root build.gradle:
+
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
     }
+}
 ```
 
 and in your module build.gradle:
 
-```
-    dependencies {
-        debugImplementation 'com.github.avohq.android-avo-inspector:dev:TAG' // Includes the visual inspector, a tool useful to monitor your analytics calls when developing
-        releaseImplementation 'com.github.avohq.android-avo-inspector:prod:TAG' // Does not include the visual inspector 
-    }
+```groovy
+dependencies {
+    debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.2.0'    // Includes the visual inspector
+    releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.2.0' // Does not include the visual inspector
+}
 ```
 
 Use the latest github release tag to get the latest version of the library.
