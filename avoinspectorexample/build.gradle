@@ -47,19 +47,15 @@ dependencies {
 
     implementation 'com.segment.analytics.android:analytics:4.10.1'
 
-    // Avo Inspector dependency - use -Psource=local|jitpack-release|jitpack-commit|maven (default: maven)
+    // Avo Inspector dependency - use -Psource=local|jitpack|maven (default: maven)
     def dependencySource = project.hasProperty('source') ? project.source : 'maven'
     def ref = project.hasProperty('ref') ? project.ref : ''
 
     if (dependencySource == 'local') {
         // Local module - for development
         implementation project(path: ':avoinspector')
-    } else if (dependencySource == 'jitpack-release') {
-        // JitPack release builds (tags)
-        debugImplementation "com.github.avohq:dev:${ref}"
-        releaseImplementation "com.github.avohq:prod:${ref}"
-    } else if (dependencySource == 'jitpack-commit') {
-        // JitPack commit builds (commit hash or branch)
+    } else if (dependencySource == 'jitpack') {
+        // JitPack builds (release tags, commit hash, or branch)
         debugImplementation "com.github.avohq.android-avo-inspector:inspector-dev:${ref}"
         releaseImplementation "com.github.avohq.android-avo-inspector:inspector:${ref}"
     } else {
@@ -74,8 +70,8 @@ dependencies {
 }
 repositories {
     mavenCentral()
-    // JitPack repository for jitpack-release and jitpack-commit builds
-    if (project.hasProperty('source') && (project.source == 'jitpack-release' || project.source == 'jitpack-commit')) {
+    // JitPack repository for jitpack builds
+    if (project.hasProperty('source') && project.source == 'jitpack') {
         maven { url 'https://jitpack.io' }
     }
 }
