@@ -1,12 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
-    }
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
@@ -38,6 +29,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     testOptions {
         unitTests.returnDefaultValues = true
     }
@@ -48,7 +43,7 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.22"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
 
     implementation 'com.segment.analytics.android:analytics:4.10.1'
 
@@ -62,8 +57,8 @@ dependencies {
         // JitPack - for testing pre-release builds
         // Use -Pref=<branch|tag|commit> to specify version (default: master)
         def ref = project.hasProperty('ref') ? project.ref : 'master'
-        debugImplementation "com.github.avohq.android-avo-inspector:dev:${ref}"
-        releaseImplementation "com.github.avohq.android-avo-inspector:prod:${ref}"
+        debugImplementation "com.github.avohq:dev:${ref}"
+        releaseImplementation "com.github.avohq:prod:${ref}"
     } else {
         // Maven Central (default) - for released versions
         debugImplementation 'app.avo:inspector-dev:2.2.1'

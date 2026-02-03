@@ -38,8 +38,8 @@ and in your module build.gradle:
 
 ```groovy
 dependencies {
-    debugImplementation 'com.github.avohq.android-avo-inspector:dev:2.2.0'    // Includes the visual inspector
-    releaseImplementation 'com.github.avohq.android-avo-inspector:prod:2.2.0' // Does not include the visual inspector
+    debugImplementation 'com.github.avohq:dev:2.2.1'    // Includes the visual inspector
+    releaseImplementation 'com.github.avohq:prod:2.2.1' // Does not include the visual inspector
 }
 ```
 
