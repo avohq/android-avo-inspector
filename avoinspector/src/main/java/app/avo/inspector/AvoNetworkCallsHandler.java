@@ -211,6 +211,10 @@ class AvoNetworkCallsHandler {
         }
         String bodyString = body.toString();
 
+        if (AvoInspector.isLogging()) {
+            Log.d("Avo Inspector", "Request body: " + bodyString);
+        }
+
         @SuppressWarnings("CharsetObjectCanBeUsed")
         byte[] bodyBytes = bodyString.getBytes("UTF-8");
         OutputStream os = connection.getOutputStream();
