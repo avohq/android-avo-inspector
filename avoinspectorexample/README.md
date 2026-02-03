@@ -13,7 +13,7 @@ Edit `gradle.properties` in the project root:
 ```properties
 # Options: maven, jitpack, local
 source=maven
-ref=2.2.1
+ref=2.3.0
 ```
 
 Change the value and sync Gradle to switch sources.
