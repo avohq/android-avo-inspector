@@ -47,22 +47,25 @@ dependencies {
 
     implementation 'com.segment.analytics.android:analytics:4.10.1'
 
-    // Avo Inspector dependency - use -Psource=local|jitpack|maven (default: maven)
+    // Avo Inspector dependency - use -Psource=local|jitpack-release|jitpack-commit|maven (default: maven)
     def dependencySource = project.hasProperty('source') ? project.source : 'maven'
+    def ref = project.hasProperty('ref') ? project.ref : ''
 
     if (dependencySource == 'local') {
         // Local module - for development
         implementation project(path: ':avoinspector')
-    } else if (dependencySource == 'jitpack') {
-        // JitPack - for testing pre-release builds
-        // Use -Pref=<branch|tag|commit> to specify version (default: master)
-        def ref = project.hasProperty('ref') ? project.ref : 'master'
+    } else if (dependencySource == 'jitpack-release') {
+        // JitPack release builds (tags)
         debugImplementation "com.github.avohq:dev:${ref}"
         releaseImplementation "com.github.avohq:prod:${ref}"
+    } else if (dependencySource == 'jitpack-commit') {
+        // JitPack commit builds (commit hash or branch)
+        debugImplementation "com.github.avohq.android-avo-inspector:inspector-dev:${ref}"
+        releaseImplementation "com.github.avohq.android-avo-inspector:inspector:${ref}"
     } else {
         // Maven Central (default) - for released versions
-        debugImplementation 'app.avo:inspector-dev:2.2.1'
-        releaseImplementation 'app.avo:inspector:2.2.1'
+        debugImplementation 'app.avo:inspector-dev:2.3.0'
+        releaseImplementation 'app.avo:inspector:2.3.0'
     }
 
     testImplementation 'org.json:json:20240303'
@@ -71,8 +74,8 @@ dependencies {
 }
 repositories {
     mavenCentral()
-    // JitPack repository for -Psource=jitpack builds
-    if (project.hasProperty('source') && project.source == 'jitpack') {
+    // JitPack repository for jitpack-release and jitpack-commit builds
+    if (project.hasProperty('source') && (project.source == 'jitpack-release' || project.source == 'jitpack-commit')) {
         maven { url 'https://jitpack.io' }
     }
 }

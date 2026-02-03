@@ -1,53 +1,47 @@
 package app.avo.inspector;
 
 import org.json.JSONException;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class NetworkCallBodiesTests {
 
-    @Test
-    public void testSessionStartedBody() {
+    private AvoStorage prevAvoStorage;
 
-        AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
-                "testApiKey", "testEnvName", "testAppName",
-                "testAppVersion", "testLibVersion",
-                "testInstallationId"
-        );
-        sut.samplingRate = 0.7;
-        AvoSessionTracker.sessionId = "testSessionId";
+    @Before
+    public void setUp() {
+        prevAvoStorage = AvoInspector.avoStorage;
+        AvoAnonymousId.clearCache();
+        AvoStorage mockStorage = mock(AvoStorage.class);
+        when(mockStorage.isInitialized()).thenReturn(true);
+        when(mockStorage.getItem(any())).thenReturn("testAnonymousId");
+        AvoInspector.avoStorage = mockStorage;
+    }
 
-        Map<String, Object> body = sut.bodyForSessionStartedCall();
-
-        Assert.assertEquals("sessionStarted", body.get("type"));
-
-        Assert.assertNotNull(body.get("createdAt"));
-        Assert.assertEquals("testAppVersion", body.get("appVersion"));
-        Assert.assertEquals("testApiKey", body.get("apiKey"));
-        Assert.assertEquals("testAppName", body.get("appName"));
-        Assert.assertNotNull(body.get("messageId"));
-        Assert.assertEquals("testEnvName", body.get("env"));
-        Assert.assertEquals("testLibVersion", body.get("libVersion"));
-        Assert.assertEquals("android", body.get("libPlatform"));
-        Assert.assertEquals("testInstallationId", body.get("trackingId"));
-        Assert.assertEquals(0.7, body.get("samplingRate"));
-        Assert.assertEquals("testSessionId", body.get("sessionId"));
+    @After
+    public void tearDown() {
+        AvoInspector.avoStorage = prevAvoStorage;
+        AvoAnonymousId.clearCache();
     }
 
     @Test
     public void testEventSchemaBodyFromAvoFunction() throws JSONException {
         AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
                 "testApiKey", "testEnvName", "testAppName",
-                "testAppVersion", "testLibVersion",
-                "testInstallationId"
+                "testAppVersion", "testLibVersion"
         );
 
         sut.samplingRate = 1;
-        AvoSessionTracker.sessionId = "testSessionId";
 
         Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
 
@@ -64,12 +58,10 @@ public class NetworkCallBodiesTests {
 
         AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
                 "testApiKey", "testEnvName", "testAppName",
-                "testAppVersion", "testLibVersion",
-                "testInstallationId"
+                "testAppVersion", "testLibVersion"
         );
 
         sut.samplingRate = 1;
-        AvoSessionTracker.sessionId = "testSessionId";
 
         Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
         AvoEventSchemaType.AvoObject avoObject = new AvoEventSchemaType.AvoObject(
@@ -106,9 +98,10 @@ public class NetworkCallBodiesTests {
         Assert.assertEquals("testEnvName", body.get("env"));
         Assert.assertEquals("testLibVersion", body.get("libVersion"));
         Assert.assertEquals("android", body.get("libPlatform"));
-        Assert.assertEquals("testInstallationId", body.get("trackingId"));
+        Assert.assertEquals("", body.get("trackingId"));
         Assert.assertEquals(1.0, body.get("samplingRate"));
-        Assert.assertEquals("testSessionId", body.get("sessionId"));
+        Assert.assertEquals("", body.get("sessionId"));
+        Assert.assertEquals("testAnonymousId", body.get("anonymousId"));
         Assert.assertEquals(false, body.get("avoFunction"));
         Assert.assertNull(body.get("eventId"));
         Assert.assertNull(body.get("eventHash"));
