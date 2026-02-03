@@ -34,7 +34,7 @@ Uses JitPack for testing release tags, commits, or branches:
 
 ```bash
 # Using a release tag
-./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=2.2.1
+./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=2.3.0
 
 # Using a commit hash
 ./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=abc1234

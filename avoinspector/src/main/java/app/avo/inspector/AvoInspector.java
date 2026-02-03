@@ -31,7 +31,6 @@ public class AvoInspector implements Inspector {
 
     String env;
 
-    AvoSessionTracker sessionTracker;
     AvoBatcher avoBatcher;
     AvoSchemaExtractor avoSchemaExtractor;
 
@@ -39,6 +38,8 @@ public class AvoInspector implements Inspector {
 
     @NonNull
     VisualInspector visualInspector;
+
+    public static AvoStorage avoStorage;
 
     AvoInspector(String apiKey, Application application, String envString, @Nullable Activity rootActivityForVisualInspector) {
         this(apiKey, application,
@@ -69,6 +70,26 @@ public class AvoInspector implements Inspector {
             }
         } catch (PackageManager.NameNotFoundException ignored) {}
 
+        if (avoStorage == null) {
+            final android.content.SharedPreferences sharedPreferences = application.getSharedPreferences("AvoInspector", android.content.Context.MODE_PRIVATE);
+            avoStorage = new AvoStorage() {
+                @Override
+                public boolean isInitialized() {
+                    return true;
+                }
+
+                @Override
+                public String getItem(String key) {
+                    return sharedPreferences.getString(key, null);
+                }
+
+                @Override
+                public void setItem(String key, String value) {
+                    sharedPreferences.edit().putString(key, value).apply();
+                }
+            };
+        }
+
         avoSchemaExtractor = new AvoSchemaExtractor();
 
         int stringId = application.getApplicationInfo().labelRes;
@@ -77,12 +98,9 @@ public class AvoInspector implements Inspector {
         this.env = env.getName();
         this.apiKey = apiKey;
 
-        AvoInstallationId installationId = new AvoInstallationId(application);
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
-                apiKey, env.getName(), appName, appVersionString, libVersion + "",
-                installationId.installationId);
+                apiKey, env.getName(), appName, appVersionString, libVersion + "");
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
-        sessionTracker = new AvoSessionTracker(application, avoBatcher);
 
         if (env == AvoInspectorEnv.Dev) {
             setBatchSize(1);
@@ -102,11 +120,6 @@ public class AvoInspector implements Inspector {
                     isHidden = false;
                     try {
                         avoBatcher.enterForeground();
-                    } catch (Exception e) {
-                        handleException(e, AvoInspector.this.env);
-                    }
-                    try {
-                        sessionTracker.startOrProlongSession(System.currentTimeMillis());
                     } catch (Exception e) {
                         handleException(e, AvoInspector.this.env);
                     }
@@ -255,8 +268,6 @@ public class AvoInspector implements Inspector {
         logPostExtract(eventName, eventSchema);
         visualInspector.showSchemaInVisualInspector(eventName, eventSchema);
 
-        sessionTracker.startOrProlongSession(System.currentTimeMillis());
-
         avoBatcher.batchTrackEventSchema(eventName, eventSchema, eventId, eventHash);
     }
 
@@ -284,8 +295,6 @@ public class AvoInspector implements Inspector {
     @Override
     public @NonNull Map<String, AvoEventSchemaType> extractSchema(@Nullable Object eventProperties) {
         try {
-            sessionTracker.startOrProlongSession(System.currentTimeMillis());
-
             Map eventPropsToCheck = new HashMap<>();
             if (eventProperties instanceof Map) {
                 eventPropsToCheck = (Map) eventProperties;

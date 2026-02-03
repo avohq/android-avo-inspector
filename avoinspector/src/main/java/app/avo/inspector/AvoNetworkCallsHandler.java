@@ -30,27 +30,18 @@ class AvoNetworkCallsHandler {
     String appName;
     String appVersion;
     String libVersion;
-    String installationId;
 
     double samplingRate = 1.0;
 
     Handler callbackHandler = new Handler(Looper.getMainLooper());
 
     AvoNetworkCallsHandler(String apiKey, String envName, String appName,
-                           String appVersion, String libVersion,
-                           String installationId) {
+                           String appVersion, String libVersion) {
         this.apiKey = apiKey;
         this.envName = envName;
         this.appName = appName;
         this.appVersion = appVersion;
         this.libVersion = libVersion;
-        this.installationId = installationId;
-    }
-
-    Map<String, Object> bodyForSessionStartedCall() {
-        Map<String, Object> sessionBody = createBaseCallBody();
-        sessionBody.put("type", "sessionStarted");
-        return sessionBody;
     }
 
     Map<String, Object> bodyForEventSchemaCall(String eventName,
@@ -85,9 +76,10 @@ class AvoNetworkCallsHandler {
         result.put("env", envName);
         result.put("libPlatform", "android");
         result.put("messageId", UUID.randomUUID().toString());
-        result.put("trackingId", installationId);
+        result.put("trackingId", "");
         result.put("createdAt", Util.currentTimeAsISO8601UTCString());
-        result.put("sessionId", AvoSessionTracker.sessionId);
+        result.put("sessionId", "");
+        result.put("anonymousId", AvoAnonymousId.anonymousId());
         result.put("samplingRate", samplingRate);
 
         return result;
@@ -105,9 +97,7 @@ class AvoNetworkCallsHandler {
             for (Map<String, Object> item : data) {
                 Object type = item.get("type");
 
-                if (type != null && type.equals("sessionStarted")) {
-                    Log.d("Avo Inspector", "Sending session started event");
-                } else if (type != null && type.equals("event")) {
+                if (type != null && type.equals("event")) {
                     Object eventName = item.get("eventName");
                     Object eventProps = item.get("eventProperties");
 
@@ -220,6 +210,10 @@ class AvoNetworkCallsHandler {
             body.put(eventJson);
         }
         String bodyString = body.toString();
+
+        if (AvoInspector.isLogging()) {
+            Log.d("Avo Inspector", "Request body: " + bodyString);
+        }
 
         @SuppressWarnings("CharsetObjectCanBeUsed")
         byte[] bodyBytes = bodyString.getBytes("UTF-8");
