@@ -192,10 +192,20 @@ class AvoNetworkCallsHandler {
                     if (AvoInspector.isLogging()) {
                         Log.e("AvoInspector", "Failed to perform network call, will retry later");
                     }
-                    completionHandler.call(true);
-                } catch (Exception e) {
+                    callbackHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            completionHandler.call(true);
+                        }
+                    });
+                } catch (final Exception e) {
                     Util.handleException(e, envName);
-                    completionHandler.call(false);
+                    callbackHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            completionHandler.call(false);
+                        }
+                    });
                 }
             }
         }).start();
