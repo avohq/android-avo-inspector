@@ -4,7 +4,7 @@ Example app demonstrating the Avo Inspector SDK integration.
 
 ## Building with Different Dependency Sources
 
-The example app supports four dependency sources for the Avo Inspector SDK.
+The example app supports three dependency sources for the Avo Inspector SDK.
 
 ### IDE (Android Studio)
 
