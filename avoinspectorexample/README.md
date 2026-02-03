@@ -4,7 +4,7 @@ Example app demonstrating the Avo Inspector SDK integration.
 
 ## Building with Different Dependency Sources
 
-The example app supports three dependency sources for the Avo Inspector SDK.
+The example app supports four dependency sources for the Avo Inspector SDK.
 
 ### IDE (Android Studio)
 
@@ -13,6 +13,7 @@ Edit `gradle.properties` in the project root:
 ```properties
 # Options: maven, jitpack, local
 source=maven
+ref=2.2.1
 ```
 
 Change the value and sync Gradle to switch sources.
@@ -25,22 +26,21 @@ Uses the released version from Maven Central:
 
 ```bash
 ./gradlew :avoinspectorexample:assembleDebug
-./gradlew :avoinspectorexample:assembleRelease
 ```
 
 ### JitPack
 
-Uses JitPack for testing pre-release builds. Specify a branch, tag, or commit with `-Pref`:
+Uses JitPack for testing release tags, commits, or branches:
 
 ```bash
-# Using a tag
+# Using a release tag
 ./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=2.2.1
-
-# Using a branch
-./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=master
 
 # Using a commit hash
 ./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=abc1234
+
+# Using a branch (use ~ instead of /)
+./gradlew :avoinspectorexample:assembleDebug -Psource=jitpack -Pref=feat~branch-name-SNAPSHOT
 ```
 
 ### Local Module
@@ -49,7 +49,6 @@ Uses the local `avoinspector` module for development:
 
 ```bash
 ./gradlew :avoinspectorexample:assembleDebug -Psource=local
-./gradlew :avoinspectorexample:assembleRelease -Psource=local
 ```
 
 ## Summary
@@ -57,5 +56,5 @@ Uses the local `avoinspector` module for development:
 | Source | Command | Use Case |
 |--------|---------|----------|
 | Maven | `./gradlew assembleDebug` | Test released version |
-| JitPack | `./gradlew assembleDebug -Psource=jitpack -Pref=<ref>` | Test pre-release builds |
+| JitPack | `./gradlew assembleDebug -Psource=jitpack -Pref=<ref>` | Test tags/commits/branches |
 | Local | `./gradlew assembleDebug -Psource=local` | Development |
