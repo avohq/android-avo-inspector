@@ -39,9 +39,15 @@ public class AvoInspector implements Inspector {
     @NonNull
     VisualInspector visualInspector;
 
+    // Socket-level timeout for event spec fetch (connect + read). The generated
+    // AvoEventSpecFetcher applies this to both setConnectTimeout and setReadTimeout,
+    // so the worst-case wall-clock time is approximately 2x this value plus DNS resolution.
+    private static final int EVENT_SPEC_FETCH_TIMEOUT_MS = 5000;
+
     @Nullable EventSpecCache eventSpecCache;
     @Nullable AvoEventSpecFetcher eventSpecFetcher;
-    @Nullable String currentBranchId;
+    @Nullable volatile String currentBranchId;
+    private final Object branchIdLock = new Object();
 
     public static AvoStorage avoStorage;
 
@@ -110,7 +116,7 @@ public class AvoInspector implements Inspector {
         String streamId = AvoAnonymousId.anonymousId();
         if (streamId != null && !streamId.isEmpty()) {
             this.eventSpecCache = new EventSpecCache(isLogging());
-            this.eventSpecFetcher = new AvoEventSpecFetcher(2000, isLogging(), env.getName());
+            this.eventSpecFetcher = new AvoEventSpecFetcher(EVENT_SPEC_FETCH_TIMEOUT_MS, isLogging(), env.getName());
         }
 
         if (env == AvoInspectorEnv.Dev) {
@@ -423,15 +429,17 @@ public class AvoInspector implements Inspector {
 
     private void handleBranchChangeAndCache(EventSpecResponse specResponse, String eventName) {
         String newBranchId = specResponse.metadata.branchId;
-        if (currentBranchId != null && !currentBranchId.equals(newBranchId)) {
-            if (isLogging()) {
-                Log.d("Avo Inspector", "Branch changed from " + currentBranchId + " to " + newBranchId + ". Flushing cache.");
+        synchronized (branchIdLock) {
+            if (currentBranchId != null && !currentBranchId.equals(newBranchId)) {
+                if (isLogging()) {
+                    Log.d("Avo Inspector", "Branch changed from " + currentBranchId + " to " + newBranchId + ". Flushing cache.");
+                }
+                if (eventSpecCache != null) {
+                    eventSpecCache.clear();
+                }
             }
-            if (eventSpecCache != null) {
-                eventSpecCache.clear();
-            }
+            currentBranchId = newBranchId;
         }
-        currentBranchId = newBranchId;
 
         String streamId = AvoAnonymousId.anonymousId();
         if (eventSpecCache != null && streamId != null) {

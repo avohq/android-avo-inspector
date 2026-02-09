@@ -371,6 +371,9 @@ class EventValidator {
             Object value, PropertyConstraints constraints,
             List<String> allEventIds, int depth) {
         PropertyValidationResult result = new PropertyValidationResult();
+        if (constraints.children == null || constraints.children.isEmpty()) {
+            return result;
+        }
         Map<String, PropertyValidationResult> childrenResults = new HashMap<>();
 
         @SuppressWarnings("unchecked")
