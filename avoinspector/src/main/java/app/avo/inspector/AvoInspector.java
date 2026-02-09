@@ -39,6 +39,10 @@ public class AvoInspector implements Inspector {
     @NonNull
     VisualInspector visualInspector;
 
+    @Nullable EventSpecCache eventSpecCache;
+    @Nullable AvoEventSpecFetcher eventSpecFetcher;
+    @Nullable String currentBranchId;
+
     public static AvoStorage avoStorage;
 
     AvoInspector(String apiKey, Application application, String envString, @Nullable Activity rootActivityForVisualInspector) {
@@ -101,6 +105,13 @@ public class AvoInspector implements Inspector {
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
                 apiKey, env.getName(), appName, appVersionString, libVersion + "");
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
+
+        // Initialize event spec fetching when streamId is available
+        String streamId = AvoAnonymousId.anonymousId();
+        if (streamId != null && !streamId.isEmpty()) {
+            this.eventSpecCache = new EventSpecCache(isLogging());
+            this.eventSpecFetcher = new AvoEventSpecFetcher(2000, isLogging(), env.getName());
+        }
 
         if (env == AvoInspectorEnv.Dev) {
             setBatchSize(1);
@@ -175,7 +186,7 @@ public class AvoInspector implements Inspector {
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-                trackSchemaInternal(eventName, schema, eventId, eventHash);
+                fetchAndValidateAsync(eventName, eventProperties, schema, eventId, eventHash);
 
                 return schema;
             } else {
@@ -194,13 +205,14 @@ public class AvoInspector implements Inspector {
     @Override
     public @NonNull Map<String, AvoEventSchemaType> trackSchemaFromEvent(@NonNull String eventName, @Nullable JSONObject eventProperties) {
         try {
-            if (AvoDeduplicator.shouldRegisterEvent(eventName, Util.jsonToMap(eventProperties), false)) {
+            Map<String, Object> eventPropsMap = eventProperties != null ? Util.jsonToMap(eventProperties) : null;
+            if (AvoDeduplicator.shouldRegisterEvent(eventName, eventPropsMap, false)) {
                 logPreExtract(eventName, eventProperties);
                 visualInspector.showEventInVisualInspector(eventName, null, eventProperties);
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-                trackSchemaInternal(eventName, schema, null, null);
+                fetchAndValidateAsync(eventName, eventPropsMap, schema, null, null);
 
                 return schema;
             } else {
@@ -224,7 +236,7 @@ public class AvoInspector implements Inspector {
 
                 Map<String, AvoEventSchemaType> schema = avoSchemaExtractor.extractSchema(eventProperties, false);
 
-                trackSchemaInternal(eventName, schema, null, null);
+                fetchAndValidateAsync(eventName, eventProperties, schema, null, null);
 
                 return schema;
             } else {
@@ -356,5 +368,90 @@ public class AvoInspector implements Inspector {
     @SuppressWarnings("WeakerAccess")
     static public void setBatchFlushSeconds(int newBatchFlushSeconds) {
         AvoBatcher.batchFlushSeconds = newBatchFlushSeconds;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fetchAndValidateAsync(String eventName, @Nullable Map<String, ?> eventProperties,
+                                        Map<String, AvoEventSchemaType> schema,
+                                        @Nullable String eventId, @Nullable String eventHash) {
+
+        // Guard: no fetcher, prod environment, or no properties -> batch normally
+        if (eventSpecFetcher == null || eventSpecCache == null || eventProperties == null
+                || "prod".equals(env)) {
+            trackSchemaInternal(eventName, schema, eventId, eventHash);
+            return;
+        }
+
+        String streamId = AvoAnonymousId.anonymousId();
+        if (streamId == null || streamId.isEmpty()) {
+            trackSchemaInternal(eventName, schema, eventId, eventHash);
+            return;
+        }
+
+        // Check cache first (synchronous)
+        EventSpecResponse cached = eventSpecCache.get(apiKey, streamId, eventName);
+        if (cached != null) {
+            try {
+                ValidationResult result = EventValidator.validateEvent(
+                        (Map<String, Object>) eventProperties, cached);
+                handleBranchChangeAndCache(cached, eventName);
+                sendEventWithValidation(eventName, schema, eventId, eventHash, result, streamId);
+            } catch (Exception e) {
+                Util.handleException(e, env);
+                trackSchemaInternal(eventName, schema, eventId, eventHash);
+            }
+            return;
+        }
+
+        // Cache miss: fall back to batch immediately, fetch async to warm cache
+        trackSchemaInternal(eventName, schema, eventId, eventHash);
+
+        FetchEventSpecParams params = new FetchEventSpecParams();
+        params.apiKey = this.apiKey;
+        params.streamId = streamId;
+        params.eventName = eventName;
+
+        eventSpecFetcher.fetch(params, new EventSpecFetchCallback() {
+            @Override
+            public void onResult(EventSpecResponse specResponse) {
+                if (specResponse != null) {
+                    handleBranchChangeAndCache(specResponse, eventName);
+                }
+            }
+        });
+    }
+
+    private void handleBranchChangeAndCache(EventSpecResponse specResponse, String eventName) {
+        String newBranchId = specResponse.metadata.branchId;
+        if (currentBranchId != null && !currentBranchId.equals(newBranchId)) {
+            if (isLogging()) {
+                Log.d("Avo Inspector", "Branch changed from " + currentBranchId + " to " + newBranchId + ". Flushing cache.");
+            }
+            if (eventSpecCache != null) {
+                eventSpecCache.clear();
+            }
+        }
+        currentBranchId = newBranchId;
+
+        String streamId = AvoAnonymousId.anonymousId();
+        if (eventSpecCache != null && streamId != null) {
+            eventSpecCache.set(apiKey, streamId, eventName, specResponse);
+        }
+    }
+
+    private void sendEventWithValidation(String eventName, Map<String, AvoEventSchemaType> schema,
+                                          @Nullable String eventId, @Nullable String eventHash,
+                                          ValidationResult validationResult, String streamId) {
+
+        if (isLogging()) {
+            Log.d("Avo Inspector", "Sending validated event " + eventName);
+        }
+
+        AvoNetworkCallsHandler networkHandler = avoBatcher.getNetworkCallsHandler();
+        Map<String, Object> eventBody = networkHandler.bodyForValidatedEventSchemaCall(
+                eventName, schema, eventId, eventHash, validationResult, streamId);
+        networkHandler.reportValidatedEvent(eventBody);
+
+        visualInspector.showSchemaInVisualInspector(eventName, schema);
     }
 }

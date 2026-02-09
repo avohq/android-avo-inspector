@@ -53,6 +53,59 @@ class Util {
         return new JSONArray(properties);
     }
 
+    static JSONArray remapPropertiesWithValidation(Map<String, AvoEventSchemaType> originalProperties,
+                                                    ValidationResult validationResult) {
+        JSONArray baseProperties = remapProperties(originalProperties);
+        if (validationResult == null || validationResult.propertyResults == null) {
+            return baseProperties;
+        }
+
+        JSONArray result = new JSONArray();
+        for (int i = 0; i < baseProperties.length(); i++) {
+            try {
+                JSONObject prop = baseProperties.getJSONObject(i);
+                String propertyName = prop.optString("propertyName");
+                PropertyValidationResult propValidation = validationResult.propertyResults.get(propertyName);
+
+                if (propValidation != null) {
+                    addValidationToProperty(prop, propValidation);
+                }
+
+                result.put(prop);
+            } catch (JSONException ignored) {
+            }
+        }
+
+        return result;
+    }
+
+    private static void addValidationToProperty(JSONObject prop, PropertyValidationResult propValidation) {
+        try {
+            if (propValidation.failedEventIds != null && !propValidation.failedEventIds.isEmpty()) {
+                prop.put("failedEventIds", new JSONArray(propValidation.failedEventIds));
+            }
+            if (propValidation.passedEventIds != null && !propValidation.passedEventIds.isEmpty()) {
+                prop.put("passedEventIds", new JSONArray(propValidation.passedEventIds));
+            }
+
+            if (propValidation.children != null && !propValidation.children.isEmpty()) {
+                // Apply validation to existing children in the property
+                if (prop.has("children")) {
+                    JSONArray children = prop.getJSONArray("children");
+                    for (int i = 0; i < children.length(); i++) {
+                        JSONObject child = children.getJSONObject(i);
+                        String childName = child.optString("propertyName");
+                        PropertyValidationResult childValidation = propValidation.children.get(childName);
+                        if (childValidation != null) {
+                            addValidationToProperty(child, childValidation);
+                        }
+                    }
+                }
+            }
+        } catch (JSONException ignored) {
+        }
+    }
+
     static String readableJsonProperties(Map<String, AvoEventSchemaType> originalProperties) {
         Map<String, String> propsDescription = new HashMap<>();
 

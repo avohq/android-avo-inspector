@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +65,99 @@ class AvoNetworkCallsHandler {
         eventSchemaBody.put("eventProperties", properties);
 
         return eventSchemaBody;
+    }
+
+    Map<String, Object> bodyForValidatedEventSchemaCall(String eventName,
+                                                         Map<String, AvoEventSchemaType> schema,
+                                                         @Nullable String eventId, @Nullable String eventHash,
+                                                         ValidationResult validationResult, String streamId) {
+        JSONArray properties = Util.remapPropertiesWithValidation(schema, validationResult);
+
+        Map<String, Object> eventSchemaBody = createBaseCallBody();
+
+        if (eventId != null) {
+            eventSchemaBody.put("avoFunction", true);
+            eventSchemaBody.put("eventId", eventId);
+            eventSchemaBody.put("eventHash", eventHash);
+        } else {
+            eventSchemaBody.put("avoFunction", false);
+        }
+
+        eventSchemaBody.put("type", "event");
+        eventSchemaBody.put("eventName", eventName);
+        eventSchemaBody.put("eventProperties", properties);
+        eventSchemaBody.put("streamId", streamId);
+
+        // Add event spec metadata
+        if (validationResult.metadata != null) {
+            JSONObject metadataJson = new JSONObject();
+            try {
+                if (validationResult.metadata.schemaId != null) {
+                    metadataJson.put("schemaId", validationResult.metadata.schemaId);
+                }
+                if (validationResult.metadata.branchId != null) {
+                    metadataJson.put("branchId", validationResult.metadata.branchId);
+                }
+                if (validationResult.metadata.latestActionId != null) {
+                    metadataJson.put("latestActionId", validationResult.metadata.latestActionId);
+                }
+                if (validationResult.metadata.sourceId != null) {
+                    metadataJson.put("sourceId", validationResult.metadata.sourceId);
+                }
+            } catch (JSONException ignored) {
+            }
+            eventSchemaBody.put("eventSpecMetadata", metadataJson);
+        }
+
+        return eventSchemaBody;
+    }
+
+    void reportValidatedEvent(final Map<String, Object> eventData) {
+        if (AvoInspector.isLogging()) {
+            Object eventName = eventData.get("eventName");
+            Object eventProps = eventData.get("eventProperties");
+            if (eventName != null && eventProps != null) {
+                Log.d("Avo Inspector", "Sending validated event " + eventName + " with schema {\n" + eventProps + "\n}");
+            }
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
+
+                    HttpsURLConnection connection = null;
+                    try {
+                        connection = (HttpsURLConnection) apiUrl.openConnection();
+
+                        connection.setRequestMethod("POST");
+                        connection.setDoInput(true);
+                        connection.setDoOutput(true);
+
+                        writeTrackingCallHeader(connection);
+
+                        List<Map<String, Object>> data = new ArrayList<>();
+                        data.add(eventData);
+                        writeTrackingCallBody(data, connection);
+
+                        connection.connect();
+
+                        connection.getResponseCode();
+                    } finally {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                    }
+                } catch (IOException e) {
+                    if (AvoInspector.isLogging()) {
+                        Log.e("AvoInspector", "Failed to send validated event");
+                    }
+                } catch (Exception e) {
+                    Util.handleException(e, envName);
+                }
+            }
+        }).start();
     }
 
     private Map<String, Object> createBaseCallBody() {
