@@ -29,8 +29,10 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        final AvoInspector avoInspector = new AvoInspector("MYEfq8E4FZ6Xkxlo9mTc",
-                getApplication(), AvoInspectorEnv.Dev, this);
+        String apiKey = BuildConfig.AVO_API_KEY.isEmpty() ? "MYEfq8E4FZ6Xkxlo9mTc" : BuildConfig.AVO_API_KEY;
+        final AvoInspector avoInspector = new AvoInspector(apiKey,
+                getApplication(), AvoInspectorEnv.Dev, this,
+                "024ec9c17ea2fb3e727d2815941eeb7d7c6e551536c9e2dde37fbbf0ffb9850579");
 
         findViewById(R.id.send_event_button).setOnClickListener(view1 -> {
             String eventName = ((TextView)findViewById(R.id.event_name_input)).getText().toString();

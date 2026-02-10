@@ -17,8 +17,10 @@ class KotlinActivity : Activity() {
 
         AvoInspector.setBatchSize(0)
 
-        val avoInspector = AvoInspector("MY_API_KEY",
-                application, AvoInspectorEnv.Dev,this)
+        val apiKey = BuildConfig.AVO_API_KEY.ifEmpty { "MYEfq8E4FZ6Xkxlo9mTc" }
+        val avoInspector = AvoInspector(apiKey,
+                application, AvoInspectorEnv.Dev, null,
+                "024ec9c17ea2fb3e727d2815941eeb7d7c6e551536c9e2dde37fbbf0ffb9850579")
 
         AvoInspector.enableLogging(true)
 

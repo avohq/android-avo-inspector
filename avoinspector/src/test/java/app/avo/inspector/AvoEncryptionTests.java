@@ -145,6 +145,27 @@ public class AvoEncryptionTests {
     }
 
     @Test
+    public void encryptDecryptWithCompressedKey() throws Exception {
+        // Build compressed key (02/03 prefix + X coordinate only)
+        ECPublicKey pubKey = (ECPublicKey) recipientKeyPair.getPublic();
+        byte[] x = toUnsigned32Bytes(pubKey.getW().getAffineX());
+        byte prefix = pubKey.getW().getAffineY().testBit(0) ? (byte) 0x03 : (byte) 0x02;
+
+        StringBuilder hex = new StringBuilder();
+        hex.append(String.format("%02x", prefix));
+        for (byte b : x) hex.append(String.format("%02x", b));
+        String compressedHex = hex.toString();
+
+        assertEquals("Compressed key should be 33 bytes (66 hex chars)", 66, compressedHex.length());
+
+        String plaintext = "\"compressed key test\"";
+        String encrypted = AvoEncryption.encrypt(plaintext, compressedHex);
+
+        assertNotNull("Encryption with compressed key should succeed", encrypted);
+        assertEquals(plaintext, decrypt(encrypted));
+    }
+
+    @Test
     public void invalidKeyReturnsNull() {
         // Invalid hex key should return null (not throw)
         assertNull(AvoEncryption.encrypt("test", "deadbeef"));

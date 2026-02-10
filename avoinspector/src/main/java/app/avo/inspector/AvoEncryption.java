@@ -44,7 +44,7 @@ class AvoEncryption {
 
             // Parse recipient public key from hex
             byte[] pubKeyBytes = hexToBytes(recipientPublicKeyHex);
-            ECPublicKey recipientKey = parseUncompressedPublicKey(pubKeyBytes);
+            ECPublicKey recipientKey = parsePublicKey(pubKeyBytes);
 
             // Generate ephemeral P-256 key pair
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
@@ -96,31 +96,63 @@ class AvoEncryption {
         }
     }
 
-    private static ECPublicKey parseUncompressedPublicKey(byte[] pubKeyBytes) throws Exception {
-        // Handle both with and without 0x04 prefix
-        int offset = 0;
-        if (pubKeyBytes.length == 65 && pubKeyBytes[0] == 0x04) {
-            offset = 1;
-        } else if (pubKeyBytes.length != 64) {
-            throw new IllegalArgumentException("Invalid public key length: " + pubKeyBytes.length);
-        }
-
-        byte[] xBytes = new byte[32];
-        byte[] yBytes = new byte[32];
-        System.arraycopy(pubKeyBytes, offset, xBytes, 0, 32);
-        System.arraycopy(pubKeyBytes, offset + 32, yBytes, 0, 32);
-
-        BigInteger x = new BigInteger(1, xBytes);
-        BigInteger y = new BigInteger(1, yBytes);
-        ECPoint point = new ECPoint(x, y);
-
+    private static ECPublicKey parsePublicKey(byte[] pubKeyBytes) throws Exception {
         AlgorithmParameters params = AlgorithmParameters.getInstance("EC");
         params.init(new ECGenParameterSpec("secp256r1"));
         ECParameterSpec ecSpec = params.getParameterSpec(ECParameterSpec.class);
 
+        BigInteger x;
+        BigInteger y;
+
+        if (pubKeyBytes.length == 33 && (pubKeyBytes[0] == 0x02 || pubKeyBytes[0] == 0x03)) {
+            // Compressed key: prefix (1 byte) + X (32 bytes)
+            byte[] xBytes = new byte[32];
+            System.arraycopy(pubKeyBytes, 1, xBytes, 0, 32);
+            x = new BigInteger(1, xBytes);
+            y = decompressY(x, pubKeyBytes[0] == 0x03, ecSpec);
+        } else {
+            // Uncompressed: handle both with and without 0x04 prefix
+            int offset = 0;
+            if (pubKeyBytes.length == 65 && pubKeyBytes[0] == 0x04) {
+                offset = 1;
+            } else if (pubKeyBytes.length != 64) {
+                throw new IllegalArgumentException("Invalid public key length: " + pubKeyBytes.length);
+            }
+
+            byte[] xBytes = new byte[32];
+            byte[] yBytes = new byte[32];
+            System.arraycopy(pubKeyBytes, offset, xBytes, 0, 32);
+            System.arraycopy(pubKeyBytes, offset + 32, yBytes, 0, 32);
+
+            x = new BigInteger(1, xBytes);
+            y = new BigInteger(1, yBytes);
+        }
+
+        ECPoint point = new ECPoint(x, y);
         ECPublicKeySpec keySpec = new ECPublicKeySpec(point, ecSpec);
         KeyFactory keyFactory = KeyFactory.getInstance("EC");
         return (ECPublicKey) keyFactory.generatePublic(keySpec);
+    }
+
+    private static BigInteger decompressY(BigInteger x, boolean yOdd, ECParameterSpec ecSpec) {
+        BigInteger p = ((java.security.spec.ECFieldFp) ecSpec.getCurve().getField()).getP();
+        BigInteger a = ecSpec.getCurve().getA();
+        BigInteger b = ecSpec.getCurve().getB();
+
+        // y^2 = x^3 + ax + b (mod p)
+        BigInteger ySquared = x.modPow(BigInteger.valueOf(3), p)
+                .add(a.multiply(x).mod(p))
+                .add(b)
+                .mod(p);
+
+        // Square root via modPow((p+1)/4, p) — valid because p ≡ 3 (mod 4) for secp256r1
+        BigInteger y = ySquared.modPow(p.add(BigInteger.ONE).shiftRight(2), p);
+
+        if (y.testBit(0) != yOdd) {
+            y = p.subtract(y);
+        }
+
+        return y;
     }
 
     private static byte[] encodeUncompressedPoint(ECPublicKey publicKey) {
