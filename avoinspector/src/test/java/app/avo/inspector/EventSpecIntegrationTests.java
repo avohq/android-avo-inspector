@@ -138,7 +138,7 @@ public class EventSpecIntegrationTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
 
         // Replace batcher with one using mock handler
@@ -157,7 +157,7 @@ public class EventSpecIntegrationTests {
 
         // Verify validated event was sent (not batched)
         verify(mockNetworkHandler).reportValidatedEvent(any());
-        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any());
+        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any(), any());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class EventSpecIntegrationTests {
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
         // Verify event was batched (not sent immediately)
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -209,7 +209,7 @@ public class EventSpecIntegrationTests {
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
         // Verify event was batched (prod should never use validated path)
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -236,7 +236,7 @@ public class EventSpecIntegrationTests {
         sut.trackSchemaFromEvent("TestEmptyJsonEvent", new JSONObject());
 
         // Verify event was batched (cache miss falls back to batch)
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEmptyJsonEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEmptyJsonEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -253,7 +253,7 @@ public class EventSpecIntegrationTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);
@@ -311,7 +311,7 @@ public class EventSpecIntegrationTests {
         ValidationResult validationResult = createTestValidationResult();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         // Base fields
         assertEquals("testApiKey", body.get("apiKey"));
@@ -344,7 +344,7 @@ public class EventSpecIntegrationTests {
         ValidationResult validationResult = createTestValidationResult();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         JSONObject metadata = (JSONObject) body.get("eventSpecMetadata");
         assertNotNull(metadata);
@@ -364,7 +364,7 @@ public class EventSpecIntegrationTests {
         ValidationResult validationResult = createTestValidationResult();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, "eventId1", "eventHash1", validationResult, "stream123");
+                "TestEvent", schema, "eventId1", "eventHash1", validationResult, "stream123", null);
 
         assertTrue((Boolean) body.get("avoFunction"));
         assertEquals("eventId1", body.get("eventId"));
@@ -491,7 +491,7 @@ public class EventSpecIntegrationTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
 
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
@@ -508,9 +508,9 @@ public class EventSpecIntegrationTests {
 
         // Verify validated event was sent with eventId and eventHash
         verify(mockNetworkHandler).bodyForValidatedEventSchemaCall(
-                eq("TestEvent"), any(), eq("evtId"), eq("evtHash"), any(), eq("testStreamId"));
+                eq("TestEvent"), any(), eq("evtId"), eq("evtHash"), any(), eq("testStreamId"), any());
         verify(mockNetworkHandler).reportValidatedEvent(any());
-        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any());
+        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any(), any());
     }
 
     // =========================================================================
@@ -525,7 +525,7 @@ public class EventSpecIntegrationTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
 
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
@@ -542,7 +542,7 @@ public class EventSpecIntegrationTests {
 
         // Verify validated event was sent
         verify(mockNetworkHandler).reportValidatedEvent(any());
-        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any());
+        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any(), any());
     }
 
     // =========================================================================
@@ -558,7 +558,7 @@ public class EventSpecIntegrationTests {
         schema.put("name", new AvoEventSchemaType.AvoString());
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, null, "stream123");
+                "TestEvent", schema, null, null, null, "stream123", null);
 
         assertNotNull(body);
         assertFalse(body.containsKey("eventSpecMetadata"));
@@ -577,7 +577,7 @@ public class EventSpecIntegrationTests {
         validationResult.propertyResults = new HashMap<>();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         assertNotNull(body);
         assertFalse(body.containsKey("eventSpecMetadata"));
@@ -599,7 +599,7 @@ public class EventSpecIntegrationTests {
         validationResult.propertyResults = new HashMap<>();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         assertTrue(body.containsKey("eventSpecMetadata"));
         JSONObject metadata = (JSONObject) body.get("eventSpecMetadata");

@@ -123,7 +123,7 @@ public class FetchAndValidateTests {
         eventProps.put("userId", "user123");
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -143,7 +143,7 @@ public class FetchAndValidateTests {
         eventProps.put("userId", "user123");
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -167,7 +167,7 @@ public class FetchAndValidateTests {
         eventProps.put("userId", "user123");
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -183,7 +183,7 @@ public class FetchAndValidateTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
 
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
@@ -204,7 +204,7 @@ public class FetchAndValidateTests {
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
         verify(mockNetworkHandler).reportValidatedEvent(any());
-        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any());
+        verify(mockBatcher, never()).batchTrackEventSchema(anyString(), any(), any(), any(), any());
     }
 
     // =========================================================================
@@ -243,7 +243,7 @@ public class FetchAndValidateTests {
         sut.trackSchemaFromEvent("TestEvent", (Map<String, ?>) eventProps);
 
         // Should fall back to batch due to exception
-        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null));
+        verify(mockBatcher).batchTrackEventSchema(eq("TestEvent"), any(), eq(null), eq(null), any());
         verify(mockNetworkHandler, never()).reportValidatedEvent(any());
     }
 
@@ -259,7 +259,7 @@ public class FetchAndValidateTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);
@@ -296,7 +296,7 @@ public class FetchAndValidateTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);
@@ -335,7 +335,7 @@ public class FetchAndValidateTests {
         Map<String, Object> mockBody = new HashMap<>();
         mockBody.put("type", "event");
         when(mockNetworkHandler.bodyForValidatedEventSchemaCall(
-                anyString(), any(), any(), any(), any(), anyString()
+                anyString(), any(), any(), any(), any(), anyString(), any()
         )).thenReturn(mockBody);
         AvoBatcher mockBatcher = mock(AvoBatcher.class);
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);

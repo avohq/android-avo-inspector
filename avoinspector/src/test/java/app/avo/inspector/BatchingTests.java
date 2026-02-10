@@ -110,7 +110,7 @@ public class BatchingTests {
 
         avoInspector.avoFunctionTrackSchemaFromEvent("Test", testMap, "eventId", "eventHash");
 
-        verify(mockBatcher).batchTrackEventSchema("Test", testSchema, "eventId", "eventHash");
+        verify(mockBatcher).batchTrackEventSchema(eq("Test"), eq(testSchema), eq("eventId"), eq("eventHash"), any());
     }
 
     @Test
@@ -353,7 +353,7 @@ public class BatchingTests {
 
         //When
         for (int i = 0; i < AvoBatcher.batchSize; i++) {
-            sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+            sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
         }
 
         // Then
@@ -361,7 +361,7 @@ public class BatchingTests {
 
         // When
         sut.batchTrackEventSchema("Test Event",
-                new HashMap<String, AvoEventSchemaType>(), null, null);
+                new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -369,7 +369,7 @@ public class BatchingTests {
         // When
         for (int i = 0; i < AvoBatcher.batchSize - 1; i++) {
             sut.batchTrackEventSchema("Test Event",
-                    new HashMap<String, AvoEventSchemaType>(), null, null);
+                    new HashMap<String, AvoEventSchemaType>(), null, null, null);
         }
 
         // Then
@@ -392,7 +392,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis + 1000;
 
         //When
-        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
         verify(sut.mainHandler, never()).post(any(Runnable.class)); // the handler does not run, so we adjust batchFlushAttemptMillis every time manually
@@ -401,7 +401,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis;
 
         //When
-        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -410,7 +410,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis();
 
         //When
-        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
         verify(sut.mainHandler).post(any(Runnable.class));
@@ -419,7 +419,7 @@ public class BatchingTests {
         sut.batchFlushAttemptMillis = System.currentTimeMillis() - flushMillis;
 
         //When
-        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+        sut.batchTrackEventSchema("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
         verify(sut.mainHandler, times(2)).post(any(Runnable.class));
@@ -434,10 +434,10 @@ public class BatchingTests {
 
         // When
         sut.batchTrackEventSchema("Test Event",
-                new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash");
+                new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash", null);
 
         // Then
-        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash");
+        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), "Event Id", "Event Hash", null);
     }
 
     @Test
@@ -449,9 +449,9 @@ public class BatchingTests {
 
         // When
         sut.batchTrackEventSchema("Test Event",
-                new HashMap<String, AvoEventSchemaType>(), null, null);
+                new HashMap<String, AvoEventSchemaType>(), null, null, null);
 
         // Then
-        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null);
+        verify(mockNetworkCallsHandler).bodyForEventSchemaCall("Test Event", new HashMap<String, AvoEventSchemaType>(), null, null, null);
     }
 }

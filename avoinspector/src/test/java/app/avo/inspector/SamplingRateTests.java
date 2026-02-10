@@ -49,7 +49,7 @@ public class SamplingRateTests {
         sut.callbackHandler = mock(Handler.class);
 
         for (int i = 0; i < 1000; i++) {
-            final Map<String, Object> body = sut.bodyForEventSchemaCall("testEvent", new HashMap<String, AvoEventSchemaType>(), null, null);
+            final Map<String, Object> body = sut.bodyForEventSchemaCall("testEvent", new HashMap<String, AvoEventSchemaType>(), null, null, null);
             sut.reportInspectorWithBatchBody(new ArrayList<Map<String, Object>>() {{
                                                  add(body);
                                              }},
@@ -75,7 +75,7 @@ public class SamplingRateTests {
         sut.callbackHandler = mock(Handler.class);
 
         for (int i = 0; i < 10; i++) {
-            final Map<String, Object> body = sut.bodyForEventSchemaCall("testEvent", new HashMap<String, AvoEventSchemaType>(), null, null);
+            final Map<String, Object> body = sut.bodyForEventSchemaCall("testEvent", new HashMap<String, AvoEventSchemaType>(), null, null, null);
             sut.reportInspectorWithBatchBody(new ArrayList<Map<String, Object>>() {{
                                                  add(body);
                                              }},

@@ -12,10 +12,21 @@ android {
         versionName "4.1"
         testInstrumentationRunner "AndroidJUnit4"
 
+        // Load API key from local.properties (gitignored), fall back to empty string
+        def localProps = new Properties()
+        def localPropsFile = rootProject.file('local.properties')
+        if (localPropsFile.exists()) {
+            localPropsFile.withInputStream { stream -> localProps.load(stream) }
+        }
+        buildConfigField "String", "AVO_API_KEY", "\"${localProps.getProperty('avoApiKey', '')}\""
+
         // Required when using local module (has flavor dimension)
         if (project.hasProperty('source') && project.source == 'local') {
             missingDimensionStrategy "avoEnvironment", "development", "production"
         }
+    }
+    buildFeatures {
+        buildConfig true
     }
     buildTypes {
         release {

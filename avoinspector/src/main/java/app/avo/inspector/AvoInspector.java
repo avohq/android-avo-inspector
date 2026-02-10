@@ -44,6 +44,8 @@ public class AvoInspector implements Inspector {
     // so the worst-case wall-clock time is approximately 2x this value plus DNS resolution.
     private static final int EVENT_SPEC_FETCH_TIMEOUT_MS = 5000;
 
+    @Nullable String publicEncryptionKey;
+
     // Total wall-clock timeout including DNS resolution. Bounds the entire fetch
     // so that unresolvable hosts fail in ~10s instead of the platform default (~90s).
     private static final int EVENT_SPEC_FETCH_WALL_TIMEOUT_MS = 10_000;
@@ -59,15 +61,19 @@ public class AvoInspector implements Inspector {
         this(apiKey, application,
                 envString.equalsIgnoreCase("prod") ? AvoInspectorEnv.Prod :
                         envString.equalsIgnoreCase("staging") ? AvoInspectorEnv.Staging : AvoInspectorEnv.Dev,
-                rootActivityForVisualInspector);
+                rootActivityForVisualInspector, null);
     }
 
     public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env) {
-        this(apiKey, application, env, null);
+        this(apiKey, application, env, null, null);
+    }
+
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable String publicEncryptionKey) {
+        this(apiKey, application, env, null, publicEncryptionKey);
     }
 
     @SuppressWarnings("deprecation")
-    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector) {
+    public AvoInspector(@NonNull String apiKey, @NonNull Application application, @NonNull AvoInspectorEnv env, @Nullable Activity rootActivityForVisualInspector, @Nullable String publicEncryptionKey) {
         try {
             PackageManager packageManager = application.getPackageManager();
             PackageInfo pInfo = packageManager.getPackageInfo(application.getPackageName(), 0);
@@ -111,10 +117,15 @@ public class AvoInspector implements Inspector {
 
         this.env = env.getName();
         this.apiKey = apiKey;
+        this.publicEncryptionKey = publicEncryptionKey;
 
         AvoNetworkCallsHandler networkCallsHandler = new AvoNetworkCallsHandler(
-                apiKey, env.getName(), appName, appVersionString, libVersion + "");
+                apiKey, env.getName(), appName, appVersionString, libVersion + "", publicEncryptionKey);
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
+
+        if (publicEncryptionKey != null && !publicEncryptionKey.isEmpty() && isLogging()) {
+            Log.d("Avo Inspector", "Property value encryption enabled");
+        }
 
         // Initialize event spec fetching when streamId is available
         String streamId = AvoAnonymousId.anonymousId();
@@ -271,7 +282,7 @@ public class AvoInspector implements Inspector {
     public void trackSchema(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema) {
         try {
             if (AvoDeduplicator.shouldRegisterSchemaFromManually(eventName, eventSchema)) {
-                trackSchemaInternal(eventName, eventSchema, null, null);
+                trackSchemaInternal(eventName, eventSchema, null, null, null);
             } else {
                 if (isLogging()) {
                     Log.d("Avo Inspector", "Deduplicated event " + eventName);
@@ -282,7 +293,7 @@ public class AvoInspector implements Inspector {
         }
     }
 
-    private void trackSchemaInternal(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema, @Nullable String eventId, @Nullable String eventHash) {
+    private void trackSchemaInternal(@NonNull String eventName, @Nullable Map<String, AvoEventSchemaType> eventSchema, @Nullable String eventId, @Nullable String eventHash, @Nullable Map<String, ?> eventProperties) {
         if (eventSchema == null) {
             eventSchema = new HashMap<>();
         }
@@ -290,7 +301,7 @@ public class AvoInspector implements Inspector {
         logPostExtract(eventName, eventSchema);
         visualInspector.showSchemaInVisualInspector(eventName, eventSchema);
 
-        avoBatcher.batchTrackEventSchema(eventName, eventSchema, eventId, eventHash);
+        avoBatcher.batchTrackEventSchema(eventName, eventSchema, eventId, eventHash, eventProperties);
     }
 
     static void logPostExtract(@Nullable String eventName, @NonNull Map<String, AvoEventSchemaType> eventSchema) {
@@ -395,13 +406,13 @@ public class AvoInspector implements Inspector {
                         + ", props=" + (eventProperties != null)
                         + ", env=" + env + ")");
             }
-            trackSchemaInternal(eventName, schema, eventId, eventHash);
+            trackSchemaInternal(eventName, schema, eventId, eventHash, eventProperties);
             return;
         }
 
         String streamId = AvoAnonymousId.anonymousId();
         if (streamId == null || streamId.isEmpty()) {
-            trackSchemaInternal(eventName, schema, eventId, eventHash);
+            trackSchemaInternal(eventName, schema, eventId, eventHash, eventProperties);
             return;
         }
 
@@ -425,17 +436,17 @@ public class AvoInspector implements Inspector {
                                 + " with " + (result.propertyResults != null ? result.propertyResults.size() : 0) + " property results");
                     }
                     handleBranchChangeAndCache(cached, eventName);
-                    sendEventWithValidation(eventName, schema, eventId, eventHash, result, streamId);
+                    sendEventWithValidation(eventName, schema, eventId, eventHash, result, streamId, eventProperties);
                 } catch (Exception e) {
                     Util.handleException(e, env);
-                    trackSchemaInternal(eventName, schema, eventId, eventHash);
+                    trackSchemaInternal(eventName, schema, eventId, eventHash, eventProperties);
                 }
             } else {
                 // Cached empty response — no spec exists for this event
                 if (isLogging()) {
                     Log.d("Avo Inspector", "Event spec cache hit (empty) for event: " + eventName + ". Sending without validation.");
                 }
-                trackSchemaInternal(eventName, schema, eventId, eventHash);
+                trackSchemaInternal(eventName, schema, eventId, eventHash, eventProperties);
             }
             return;
         }
@@ -471,10 +482,10 @@ public class AvoInspector implements Inspector {
                             Log.d("Avo Inspector", "Validation complete for event: " + eventName
                                     + " with " + (result.propertyResults != null ? result.propertyResults.size() : 0) + " property results");
                         }
-                        sendEventWithValidation(eventName, schema, eventId, eventHash, result, capturedStreamId);
+                        sendEventWithValidation(eventName, schema, eventId, eventHash, result, capturedStreamId, capturedProperties);
                     } catch (Exception e) {
                         Util.handleException(e, env);
-                        trackSchemaInternal(eventName, schema, eventId, eventHash);
+                        trackSchemaInternal(eventName, schema, eventId, eventHash, capturedProperties);
                     }
                 } else {
                     // Cache the empty response so we don't re-fetch
@@ -484,7 +495,7 @@ public class AvoInspector implements Inspector {
                     if (isLogging()) {
                         Log.d("Avo Inspector", "Event spec fetch returned null for event: " + eventName + ". Cached empty response. Sending without validation.");
                     }
-                    trackSchemaInternal(eventName, schema, eventId, eventHash);
+                    trackSchemaInternal(eventName, schema, eventId, eventHash, capturedProperties);
                 }
             }
         });
@@ -519,7 +530,8 @@ public class AvoInspector implements Inspector {
 
     private void sendEventWithValidation(String eventName, Map<String, AvoEventSchemaType> schema,
                                           @Nullable String eventId, @Nullable String eventHash,
-                                          ValidationResult validationResult, String streamId) {
+                                          ValidationResult validationResult, String streamId,
+                                          @Nullable Map<String, ?> eventProperties) {
 
         if (isLogging()) {
             Log.d("Avo Inspector", "Sending validated event " + eventName);
@@ -527,7 +539,7 @@ public class AvoInspector implements Inspector {
 
         AvoNetworkCallsHandler networkHandler = avoBatcher.getNetworkCallsHandler();
         Map<String, Object> eventBody = networkHandler.bodyForValidatedEventSchemaCall(
-                eventName, schema, eventId, eventHash, validationResult, streamId);
+                eventName, schema, eventId, eventHash, validationResult, streamId, eventProperties);
         networkHandler.reportValidatedEvent(eventBody);
 
         visualInspector.showSchemaInVisualInspector(eventName, schema);
