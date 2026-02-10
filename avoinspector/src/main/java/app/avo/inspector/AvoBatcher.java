@@ -45,6 +45,10 @@ class AvoBatcher {
         this.networkCallsHandler = networkCallsHandler;
     }
 
+    AvoNetworkCallsHandler getNetworkCallsHandler() {
+        return networkCallsHandler;
+    }
+
     void enterBackground() {
         if (events.size() == 0) {
             return;

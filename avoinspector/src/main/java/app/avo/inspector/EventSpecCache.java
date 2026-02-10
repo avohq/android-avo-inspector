@@ -1,0 +1,126 @@
+package app.avo.inspector;
+
+import android.util.Log;
+
+import java.util.HashMap;
+import java.util.Map;
+
+class EventSpecCache {
+
+    private final HashMap<String, EventSpecCacheEntry> cache;
+
+    private static final long TTL_MS = 60_000;
+
+    private static final int MAX_EVENT_COUNT = 50;
+
+    private int globalEventCount = 0;
+
+    EventSpecCache() {
+        this.cache = new HashMap<>();
+    }
+
+    private String generateKey(String apiKey, String streamId, String eventName) {
+        return apiKey + ":" + streamId + ":" + eventName;
+    }
+
+    synchronized EventSpecResponse get(String apiKey, String streamId, String eventName) {
+        String key = generateKey(apiKey, streamId, eventName);
+        EventSpecCacheEntry entry = cache.get(key);
+
+        if (entry == null) {
+            return null;
+        }
+
+        if (shouldEvict(entry)) {
+            cache.remove(key);
+            return null;
+        }
+
+        if (AvoInspector.isLogging()) {
+            Log.d("Avo Inspector", "Cache hit for key: " + key);
+        }
+
+        entry.lastAccessed = System.currentTimeMillis();
+
+        entry.eventCount++;
+        globalEventCount++;
+
+        if (globalEventCount >= MAX_EVENT_COUNT) {
+            evictOldest();
+            globalEventCount = 0;
+        }
+
+        return entry.spec;
+    }
+
+    synchronized void set(String apiKey, String streamId, String eventName, EventSpecResponse spec) {
+        String key = generateKey(apiKey, streamId, eventName);
+
+        long now = System.currentTimeMillis();
+
+        EventSpecCacheEntry entry = new EventSpecCacheEntry();
+        entry.spec = spec;
+        entry.timestamp = now;
+        entry.lastAccessed = now;
+        entry.eventCount = 0;
+
+        cache.put(key, entry);
+
+        // Cap cache size to prevent unbounded growth
+        while (cache.size() > MAX_EVENT_COUNT) {
+            evictOldest();
+        }
+    }
+
+    synchronized void clear() {
+        cache.clear();
+        globalEventCount = 0;
+        if (AvoInspector.isLogging()) {
+            Log.d("Avo Inspector", "Cache cleared");
+        }
+    }
+
+    synchronized boolean contains(String apiKey, String streamId, String eventName) {
+        String key = generateKey(apiKey, streamId, eventName);
+        EventSpecCacheEntry entry = cache.get(key);
+        if (entry == null) {
+            return false;
+        }
+        if (shouldEvict(entry)) {
+            cache.remove(key);
+            return false;
+        }
+        return true;
+    }
+
+    synchronized int size() {
+        return cache.size();
+    }
+
+    private boolean shouldEvict(EventSpecCacheEntry entry) {
+        long age = System.currentTimeMillis() - entry.timestamp;
+        boolean ageExpired = age > TTL_MS;
+        boolean countExpired = entry.eventCount >= MAX_EVENT_COUNT;
+        return ageExpired || countExpired;
+    }
+
+    private void evictOldest() {
+        if (cache.isEmpty()) {
+            return;
+        }
+
+        String lruKey = null;
+        long oldestAccessTime = Long.MAX_VALUE;
+
+        for (Map.Entry<String, EventSpecCacheEntry> mapEntry : cache.entrySet()) {
+            if (mapEntry.getValue().lastAccessed < oldestAccessTime) {
+                oldestAccessTime = mapEntry.getValue().lastAccessed;
+                lruKey = mapEntry.getKey();
+            }
+        }
+
+        if (lruKey != null) {
+            cache.remove(lruKey);
+        }
+    }
+}

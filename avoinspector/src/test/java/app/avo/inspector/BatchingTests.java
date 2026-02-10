@@ -31,6 +31,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -98,6 +99,14 @@ public class BatchingTests {
 
         AvoInspector avoInspector = new AvoInspector("apiKey", mockApplication, AvoInspectorEnv.Dev);
         avoInspector.avoBatcher = mockBatcher;
+
+        // Mock fetcher to invoke callback synchronously with null (no spec found)
+        avoInspector.eventSpecFetcher = mock(AvoEventSpecFetcher.class);
+        doAnswer(invocation -> {
+            EventSpecFetchCallback callback = invocation.getArgument(1);
+            callback.onResult(null);
+            return null;
+        }).when(avoInspector.eventSpecFetcher).fetch(any(), any());
 
         avoInspector.avoFunctionTrackSchemaFromEvent("Test", testMap, "eventId", "eventHash");
 
