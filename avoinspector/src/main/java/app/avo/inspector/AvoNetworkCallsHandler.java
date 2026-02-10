@@ -89,7 +89,7 @@ class AvoNetworkCallsHandler {
         eventSchemaBody.put("streamId", streamId);
 
         // Add event spec metadata
-        if (validationResult.metadata != null) {
+        if (validationResult != null && validationResult.metadata != null) {
             JSONObject metadataJson = new JSONObject();
             try {
                 if (validationResult.metadata.schemaId != null) {
@@ -132,6 +132,8 @@ class AvoNetworkCallsHandler {
                         connection = (HttpsURLConnection) apiUrl.openConnection();
 
                         connection.setRequestMethod("POST");
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
                         connection.setDoInput(true);
                         connection.setDoOutput(true);
 
@@ -143,7 +145,10 @@ class AvoNetworkCallsHandler {
 
                         connection.connect();
 
-                        connection.getResponseCode();
+                        int responseCode = connection.getResponseCode();
+                        if (responseCode != HttpsURLConnection.HTTP_OK && AvoInspector.isLogging()) {
+                            Log.w("Avo Inspector", "Validated event report returned status: " + responseCode);
+                        }
                     } finally {
                         if (connection != null) {
                             connection.disconnect();

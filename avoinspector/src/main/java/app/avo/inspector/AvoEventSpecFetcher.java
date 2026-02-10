@@ -193,7 +193,7 @@ public class AvoEventSpecFetcher {
     }
 
     private String generateRequestKey(FetchEventSpecParams params) {
-        return params.streamId + ":" + params.eventName;
+        return params.apiKey + ":" + params.streamId + ":" + params.eventName;
     }
 
     public void fetch(FetchEventSpecParams params, EventSpecFetchCallback callback) {

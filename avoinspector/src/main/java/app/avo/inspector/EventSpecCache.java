@@ -40,7 +40,7 @@ class EventSpecCache {
             Log.d("Avo Inspector", "Cache hit for key: " + key);
         }
 
-        entry.lastAccessed = (double) System.currentTimeMillis();
+        entry.lastAccessed = System.currentTimeMillis();
 
         entry.eventCount++;
         globalEventCount++;
@@ -56,7 +56,7 @@ class EventSpecCache {
     synchronized void set(String apiKey, String streamId, String eventName, EventSpecResponse spec) {
         String key = generateKey(apiKey, streamId, eventName);
 
-        double now = (double) System.currentTimeMillis();
+        long now = System.currentTimeMillis();
 
         EventSpecCacheEntry entry = new EventSpecCacheEntry();
         entry.spec = spec;
@@ -65,6 +65,11 @@ class EventSpecCache {
         entry.eventCount = 0;
 
         cache.put(key, entry);
+
+        // Cap cache size to prevent unbounded growth
+        while (cache.size() > MAX_EVENT_COUNT) {
+            evictOldest();
+        }
     }
 
     synchronized void clear() {
@@ -93,7 +98,7 @@ class EventSpecCache {
     }
 
     private boolean shouldEvict(EventSpecCacheEntry entry) {
-        double age = (double) System.currentTimeMillis() - entry.timestamp;
+        long age = System.currentTimeMillis() - entry.timestamp;
         boolean ageExpired = age > TTL_MS;
         boolean countExpired = entry.eventCount >= MAX_EVENT_COUNT;
         return ageExpired || countExpired;
@@ -105,7 +110,7 @@ class EventSpecCache {
         }
 
         String lruKey = null;
-        double oldestAccessTime = Double.MAX_VALUE;
+        long oldestAccessTime = Long.MAX_VALUE;
 
         for (Map.Entry<String, EventSpecCacheEntry> mapEntry : cache.entrySet()) {
             if (mapEntry.getValue().lastAccessed < oldestAccessTime) {

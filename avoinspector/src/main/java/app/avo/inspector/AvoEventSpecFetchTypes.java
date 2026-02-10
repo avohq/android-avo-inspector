@@ -1,7 +1,6 @@
 package app.avo.inspector;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 class PropertyConstraintsWire {
     public String t;
@@ -58,9 +57,9 @@ class EventSpecResponse {
 
 class EventSpecCacheEntry {
     public EventSpecResponse spec;
-    public double timestamp;
-    public double lastAccessed;
-    public double eventCount;
+    public long timestamp;
+    public long lastAccessed;
+    public int eventCount;
 }
 
 class FetchEventSpecParams {

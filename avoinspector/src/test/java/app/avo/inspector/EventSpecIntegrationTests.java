@@ -170,8 +170,13 @@ public class EventSpecIntegrationTests {
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);
         sut.avoBatcher = mockBatcher;
 
-        // Replace fetcher with mock that returns null (simulating network failure)
+        // Replace fetcher with mock that invokes callback with null (simulating network failure)
         sut.eventSpecFetcher = mock(AvoEventSpecFetcher.class);
+        doAnswer(invocation -> {
+            EventSpecFetchCallback callback = invocation.getArgument(1);
+            callback.onResult(null);
+            return null;
+        }).when(sut.eventSpecFetcher).fetch(any(), any());
 
         // Cache is empty, so this should fall back to batch
         Map<String, Object> eventProps = new HashMap<>();
@@ -217,6 +222,14 @@ public class EventSpecIntegrationTests {
         AvoNetworkCallsHandler mockNetworkHandler = mock(AvoNetworkCallsHandler.class);
         when(mockBatcher.getNetworkCallsHandler()).thenReturn(mockNetworkHandler);
         sut.avoBatcher = mockBatcher;
+
+        // Mock fetcher to invoke callback synchronously with null (no spec found)
+        sut.eventSpecFetcher = mock(AvoEventSpecFetcher.class);
+        doAnswer(invocation -> {
+            EventSpecFetchCallback callback = invocation.getArgument(1);
+            callback.onResult(null);
+            return null;
+        }).when(sut.eventSpecFetcher).fetch(any(), any());
 
         // Track with empty JSONObject properties
         // No cached spec exists, so this should fall back to batch

@@ -114,7 +114,7 @@ public class AvoInspector implements Inspector {
 
         // Initialize event spec fetching when streamId is available
         String streamId = AvoAnonymousId.anonymousId();
-        if (streamId != null && !streamId.isEmpty()) {
+        if (streamId != null && !streamId.isEmpty() && !"unknown".equals(streamId)) {
             this.eventSpecCache = new EventSpecCache();
             this.eventSpecFetcher = new AvoEventSpecFetcher(EVENT_SPEC_FETCH_TIMEOUT_MS, env.getName());
         }
@@ -446,6 +446,8 @@ public class AvoInspector implements Inspector {
         params.streamId = streamId;
         params.eventName = eventName;
 
+        // Defensive copy to prevent caller mutations affecting async validation
+        final Map<String, ?> capturedProperties = new HashMap<>(eventProperties);
         final String capturedStreamId = streamId;
         eventSpecFetcher.fetch(params, new EventSpecFetchCallback() {
             @Override
@@ -456,11 +458,11 @@ public class AvoInspector implements Inspector {
                     try {
                         if (isLogging()) {
                             Log.d("Avo Inspector", "Validating event: " + eventName
-                                    + " with " + ((Map<String, Object>) eventProperties).size() + " properties"
+                                    + " with " + ((Map<String, Object>) capturedProperties).size() + " properties"
                                     + " against " + (specResponse.events != null ? specResponse.events.size() : 0) + " spec events");
                         }
                         ValidationResult result = EventValidator.validateEvent(
-                                (Map<String, Object>) eventProperties, specResponse);
+                                (Map<String, Object>) capturedProperties, specResponse);
                         if (isLogging()) {
                             Log.d("Avo Inspector", "Validation complete for event: " + eventName
                                     + " with " + (result.propertyResults != null ? result.propertyResults.size() : 0) + " property results");
@@ -485,6 +487,13 @@ public class AvoInspector implements Inspector {
     }
 
     private void handleBranchChangeAndCache(EventSpecResponse specResponse, String eventName) {
+        if (specResponse.metadata == null) {
+            String streamId = AvoAnonymousId.anonymousId();
+            if (eventSpecCache != null && streamId != null) {
+                eventSpecCache.set(apiKey, streamId, eventName, specResponse);
+            }
+            return;
+        }
         String newBranchId = specResponse.metadata.branchId;
         synchronized (branchIdLock) {
             if (currentBranchId != null && !currentBranchId.equals(newBranchId)) {

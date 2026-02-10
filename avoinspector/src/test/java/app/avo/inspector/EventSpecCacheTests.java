@@ -153,8 +153,8 @@ public class EventSpecCacheTests {
         EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:TestEvent");
         assertNotNull("Cache entry should exist", entry);
 
-        // Set timestamp to more than 60 seconds ago
-        entry.timestamp = (double) (System.currentTimeMillis() - 61_000);
+        // Set timestamp to more than TTL_MS (60000ms) ago to trigger expiry
+        entry.timestamp = System.currentTimeMillis() - 61_000;
 
         EventSpecResponse result = cache.get("apiKey", "stream1", "TestEvent");
         assertNull("Expired entry should return null", result);
@@ -204,11 +204,11 @@ public class EventSpecCacheTests {
 
         EventSpecCacheEntry oldEntry = internalCache.get("apiKey:stream1:OldEvent");
         assertNotNull(oldEntry);
-        oldEntry.lastAccessed = 1000.0; // Very old lastAccessed
+        oldEntry.lastAccessed = 1000L; // Very old lastAccessed
 
         EventSpecCacheEntry newEntry = internalCache.get("apiKey:stream1:NewEvent");
         assertNotNull(newEntry);
-        newEntry.lastAccessed = (double) System.currentTimeMillis(); // Recent lastAccessed
+        newEntry.lastAccessed = System.currentTimeMillis(); // Recent lastAccessed
 
         // Set globalEventCount to just below threshold so the next cache hit triggers eviction
         java.lang.reflect.Field globalCountField = EventSpecCache.class.getDeclaredField("globalEventCount");
@@ -249,7 +249,7 @@ public class EventSpecCacheTests {
 
         EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:TestEvent");
         assertNotNull(entry);
-        assertEquals("eventCount should be 1 after one hit", 1.0, entry.eventCount, 0.01);
+        assertEquals("eventCount should be 1 after one hit", 1, entry.eventCount);
 
         java.lang.reflect.Field globalCountField = EventSpecCache.class.getDeclaredField("globalEventCount");
         globalCountField.setAccessible(true);
@@ -261,7 +261,7 @@ public class EventSpecCacheTests {
 
         entry = internalCache.get("apiKey:stream1:TestEvent");
         assertNotNull(entry);
-        assertEquals("eventCount should be 2 after two hits", 2.0, entry.eventCount, 0.01);
+        assertEquals("eventCount should be 2 after two hits", 2, entry.eventCount);
 
         globalCount = globalCountField.getInt(cache);
         assertEquals("globalEventCount should be 2 after two hits", 2, globalCount);
@@ -360,7 +360,7 @@ public class EventSpecCacheTests {
 
         EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:UnknownEvent");
         assertNotNull(entry);
-        entry.timestamp = (double) (System.currentTimeMillis() - 61_000);
+        entry.timestamp = System.currentTimeMillis() - 61_000; // exceed TTL_MS (60000ms)
 
         assertFalse("Expired null-spec entry should not be contained", cache.contains("apiKey", "stream1", "UnknownEvent"));
         assertNull(cache.get("apiKey", "stream1", "UnknownEvent"));
@@ -380,7 +380,7 @@ public class EventSpecCacheTests {
 
         EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:TestEvent");
         assertNotNull(entry);
-        entry.timestamp = (double) (System.currentTimeMillis() - 61_000);
+        entry.timestamp = System.currentTimeMillis() - 61_000; // exceed TTL_MS (60000ms)
 
         assertFalse(cache.contains("apiKey", "stream1", "TestEvent"));
     }

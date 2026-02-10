@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -34,13 +35,13 @@ class EventValidator {
     /**
      * Cache for compiled regex patterns to avoid recompilation on every event.
      */
-    private static final Map<String, Pattern> regexCache = new HashMap<>();
+    private static final Map<String, Pattern> regexCache = new ConcurrentHashMap<>();
 
     /**
      * Cache for parsed allowed values JSON.
      * Key: JSON string, Value: Set of allowed values for O(1) lookup.
      */
-    private static final Map<String, Set<String>> allowedValuesCache = new HashMap<>();
+    private static final Map<String, Set<String>> allowedValuesCache = new ConcurrentHashMap<>();
 
     /**
      * Clears static caches. Used in testing to prevent cross-test contamination.
@@ -668,8 +669,15 @@ class EventValidator {
             boolean hasMin = !minStr.isEmpty();
             boolean hasMax = !maxStr.isEmpty();
 
-            double min = hasMin ? Double.parseDouble(minStr) : Double.NEGATIVE_INFINITY;
-            double max = hasMax ? Double.parseDouble(maxStr) : Double.POSITIVE_INFINITY;
+            double min;
+            double max;
+            try {
+                min = hasMin ? Double.parseDouble(minStr) : Double.NEGATIVE_INFINITY;
+                max = hasMax ? Double.parseDouble(maxStr) : Double.POSITIVE_INFINITY;
+            } catch (NumberFormatException e) {
+                Log.w(TAG, "Invalid min/max range: " + rangeStr);
+                continue;
+            }
 
             // Check for invalid format
             if ((hasMin && Double.isNaN(min)) || (hasMax && Double.isNaN(max))) {
@@ -733,6 +741,10 @@ class EventValidator {
         }
         return regex;
     }
+
+    // Note: getOrCompileRegex and getOrParseAllowedValues use ConcurrentHashMap
+    // which is safe for concurrent reads. The minor race on double-put for the same
+    // key is benign since both threads compute the same value.
 
     /**
      * Parses allowed values JSON string and returns a Set for O(1) lookup.
