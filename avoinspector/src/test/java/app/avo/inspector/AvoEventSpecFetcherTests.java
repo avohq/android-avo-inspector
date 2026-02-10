@@ -570,4 +570,117 @@ public class AvoEventSpecFetcherTests {
         assertTrue("URL should contain encoded eventName with & and =",
                 url.contains("eventName=Event+Name%26special%3Dtrue"));
     }
+
+    // =========================================================================
+    // Wall-clock timeout
+    // =========================================================================
+
+    @Test
+    public void hangingRequestTimesOutWithinWallTimeout() throws Exception {
+        int wallTimeout = 500; // 500ms wall timeout
+        CountDownLatch latch = new CountDownLatch(1);
+
+        EventSpecRequestClient hangingClient = (url, timeout) -> {
+            // Simulate DNS hang — block until interrupted
+            Thread.sleep(60_000);
+            return createValidWireResponse();
+        };
+
+        AvoEventSpecFetcher fetcher = new AvoEventSpecFetcher(5000, wallTimeout, "dev", "https://api.avo.app", hangingClient);
+
+        AtomicReference<EventSpecResponse> result = new AtomicReference<>(new EventSpecResponse());
+        long start = System.currentTimeMillis();
+        fetcher.fetch(createParams(), response -> {
+            result.set(response);
+            latch.countDown();
+        });
+
+        assertTrue("Callback should fire within wall timeout", latch.await(3, TimeUnit.SECONDS));
+        long elapsed = System.currentTimeMillis() - start;
+        assertNull("Result should be null on timeout", result.get());
+        assertTrue("Should complete within ~wallTimeout, not 60s. Elapsed: " + elapsed + "ms",
+                elapsed < 5000);
+    }
+
+    @Test
+    public void deduplicatedCallbacksBothReceiveNullOnTimeout() throws Exception {
+        int wallTimeout = 500;
+        CountDownLatch clientStarted = new CountDownLatch(1);
+        CountDownLatch resultLatch = new CountDownLatch(2);
+
+        EventSpecRequestClient hangingClient = (url, timeout) -> {
+            clientStarted.countDown();
+            Thread.sleep(60_000);
+            return createValidWireResponse();
+        };
+
+        AvoEventSpecFetcher fetcher = new AvoEventSpecFetcher(5000, wallTimeout, "dev", "https://api.avo.app", hangingClient);
+
+        AtomicReference<EventSpecResponse> result1 = new AtomicReference<>(new EventSpecResponse());
+        AtomicReference<EventSpecResponse> result2 = new AtomicReference<>(new EventSpecResponse());
+
+        fetcher.fetch(createParams(), response -> {
+            result1.set(response);
+            resultLatch.countDown();
+        });
+
+        assertTrue(clientStarted.await(3, TimeUnit.SECONDS));
+
+        fetcher.fetch(createParams(), response -> {
+            result2.set(response);
+            resultLatch.countDown();
+        });
+
+        assertTrue("Both callbacks should fire", resultLatch.await(5, TimeUnit.SECONDS));
+        assertNull("First callback should receive null", result1.get());
+        assertNull("Second callback should receive null", result2.get());
+    }
+
+    @Test
+    public void normalRequestCompletesWithinWallTimeout() throws Exception {
+        int wallTimeout = 5000;
+        CountDownLatch latch = new CountDownLatch(1);
+
+        EventSpecRequestClient fastClient = (url, timeout) -> createValidWireResponse();
+
+        AvoEventSpecFetcher fetcher = new AvoEventSpecFetcher(5000, wallTimeout, "dev", "https://api.avo.app", fastClient);
+
+        AtomicReference<EventSpecResponse> result = new AtomicReference<>();
+        fetcher.fetch(createParams(), response -> {
+            result.set(response);
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(3, TimeUnit.SECONDS));
+        assertNotNull("Fast request should succeed", result.get());
+    }
+
+    @Test
+    public void backwardCompatibleConstructorDefaultsWallTimeout() throws Exception {
+        // The 4-arg constructor (without wallTimeout) should default to timeout * 2
+        int wallTimeout = 200; // If default were used (5000*2=10000), this would pass easily
+        CountDownLatch latch = new CountDownLatch(1);
+
+        EventSpecRequestClient hangingClient = (url, timeout) -> {
+            Thread.sleep(60_000);
+            return createValidWireResponse();
+        };
+
+        // Use the backward-compatible 4-arg constructor with timeout=100
+        // wallTimeout should default to 200 (100*2)
+        AvoEventSpecFetcher fetcher = new AvoEventSpecFetcher(100, "dev", "https://api.avo.app", hangingClient);
+
+        AtomicReference<EventSpecResponse> result = new AtomicReference<>(new EventSpecResponse());
+        long start = System.currentTimeMillis();
+        fetcher.fetch(createParams(), response -> {
+            result.set(response);
+            latch.countDown();
+        });
+
+        assertTrue(latch.await(3, TimeUnit.SECONDS));
+        long elapsed = System.currentTimeMillis() - start;
+        assertNull("Should timeout and return null", result.get());
+        assertTrue("Should complete near default wallTimeout (200ms), elapsed: " + elapsed + "ms",
+                elapsed < 3000);
+    }
 }
