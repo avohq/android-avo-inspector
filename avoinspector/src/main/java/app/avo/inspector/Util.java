@@ -106,6 +106,57 @@ class Util {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    static void addEncryptedValues(JSONArray properties, Map<String, ?> eventProperties, String publicEncryptionKey) {
+        if (properties == null || eventProperties == null || publicEncryptionKey == null) {
+            return;
+        }
+
+        for (int i = 0; i < properties.length(); i++) {
+            try {
+                JSONObject prop = properties.getJSONObject(i);
+                String propertyName = prop.optString("propertyName");
+                String propertyType = prop.optString("propertyType");
+                Object value = eventProperties.get(propertyName);
+
+                if (value == null) {
+                    continue;
+                }
+
+                if ("object".equals(propertyType) && prop.has("children") && value instanceof Map) {
+                    // Recurse into object children
+                    JSONArray children = prop.getJSONArray("children");
+                    addEncryptedValues(children, (Map<String, ?>) value, publicEncryptionKey);
+                } else if (!propertyType.startsWith("list")) {
+                    // Primitive type: encrypt the JSON-stringified value
+                    String jsonValue = jsonStringifyValue(value);
+                    if (jsonValue != null) {
+                        String encrypted = AvoEncryption.encrypt(jsonValue, publicEncryptionKey);
+                        if (encrypted != null) {
+                            prop.put("encryptedPropertyValue", encrypted);
+                        }
+                    }
+                }
+                // list types are skipped
+            } catch (Exception e) {
+                Log.w("Avo Inspector", "Failed to encrypt property at index " + i, e);
+            }
+        }
+    }
+
+    static String jsonStringifyValue(Object value) {
+        try {
+            // Use JSONArray to get proper JSON representation
+            JSONArray wrapper = new JSONArray();
+            wrapper.put(value);
+            String json = wrapper.toString();
+            // Strip surrounding brackets: [value] -> value
+            return json.substring(1, json.length() - 1);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     static String readableJsonProperties(Map<String, AvoEventSchemaType> originalProperties) {
         Map<String, String> propsDescription = new HashMap<>();
 

@@ -32,23 +32,37 @@ class AvoNetworkCallsHandler {
     String appVersion;
     String libVersion;
 
+    @Nullable String publicEncryptionKey;
+
     double samplingRate = 1.0;
 
     Handler callbackHandler = new Handler(Looper.getMainLooper());
 
     AvoNetworkCallsHandler(String apiKey, String envName, String appName,
                            String appVersion, String libVersion) {
+        this(apiKey, envName, appName, appVersion, libVersion, null);
+    }
+
+    AvoNetworkCallsHandler(String apiKey, String envName, String appName,
+                           String appVersion, String libVersion,
+                           @Nullable String publicEncryptionKey) {
         this.apiKey = apiKey;
         this.envName = envName;
         this.appName = appName;
         this.appVersion = appVersion;
         this.libVersion = libVersion;
+        this.publicEncryptionKey = publicEncryptionKey;
     }
 
     Map<String, Object> bodyForEventSchemaCall(String eventName,
                                                Map<String, AvoEventSchemaType> schema,
-                                               @Nullable String eventId, @Nullable String eventHash) {
+                                               @Nullable String eventId, @Nullable String eventHash,
+                                               @Nullable Map<String, ?> eventProperties) {
         JSONArray properties = Util.remapProperties(schema);
+
+        if (shouldEncrypt() && eventProperties != null) {
+            Util.addEncryptedValues(properties, eventProperties, publicEncryptionKey);
+        }
 
         Map<String, Object> eventSchemaBody = createBaseCallBody();
 
@@ -70,8 +84,13 @@ class AvoNetworkCallsHandler {
     Map<String, Object> bodyForValidatedEventSchemaCall(String eventName,
                                                          Map<String, AvoEventSchemaType> schema,
                                                          @Nullable String eventId, @Nullable String eventHash,
-                                                         ValidationResult validationResult, String streamId) {
+                                                         ValidationResult validationResult, String streamId,
+                                                         @Nullable Map<String, ?> eventProperties) {
         JSONArray properties = Util.remapPropertiesWithValidation(schema, validationResult);
+
+        if (shouldEncrypt() && eventProperties != null) {
+            Util.addEncryptedValues(properties, eventProperties, publicEncryptionKey);
+        }
 
         Map<String, Object> eventSchemaBody = createBaseCallBody();
 
@@ -181,7 +200,16 @@ class AvoNetworkCallsHandler {
         result.put("anonymousId", AvoAnonymousId.anonymousId());
         result.put("samplingRate", samplingRate);
 
+        if (publicEncryptionKey != null && !publicEncryptionKey.isEmpty()) {
+            result.put("publicEncryptionKey", publicEncryptionKey);
+        }
+
         return result;
+    }
+
+    boolean shouldEncrypt() {
+        return publicEncryptionKey != null && !publicEncryptionKey.isEmpty()
+                && ("dev".equals(envName) || "staging".equals(envName));
     }
 
     void reportInspectorWithBatchBody(final List<Map<String, Object>> data, final Callback completionHandler) {

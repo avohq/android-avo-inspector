@@ -46,7 +46,7 @@ public class NetworkCallBodiesTests {
         Map<String, AvoEventSchemaType> testSchema = new HashMap<>();
 
         Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
-                testSchema, "event Id", "event Hash");
+                testSchema, "event Id", "event Hash", null);
 
         Assert.assertEquals(true, body.get("avoFunction"));
         Assert.assertEquals("event Id", body.get("eventId"));
@@ -85,7 +85,7 @@ public class NetworkCallBodiesTests {
         }}));
 
         Map<String, Object> body = sut.bodyForEventSchemaCall("avoObjectEvent",
-                testSchema, null, null);
+                testSchema, null, null, null);
 
         Assert.assertEquals("event", body.get("type"));
         Assert.assertEquals("[{\"propertyName\":\"nested\",\"children\":[{\"propertyName\":\"v6\",\"children\":[{\"propertyName\":\"a\",\"propertyType\":\"int\"}],\"propertyType\":\"object\"},{\"propertyName\":\"v7\",\"propertyType\":\"list<{\\\"propertyName\\\":\\\"key\\\",\\\"propertyType\\\":\\\"float\\\"}|int>\"},{\"propertyName\":\"v0\",\"propertyType\":\"int\"},{\"propertyName\":\"v1\",\"propertyType\":\"boolean\"},{\"propertyName\":\"v2\",\"propertyType\":\"float\"},{\"propertyName\":\"v3\",\"propertyType\":\"string\"},{\"propertyName\":\"v4\",\"propertyType\":\"unknown\"},{\"propertyName\":\"v5\",\"propertyType\":\"null\"}],\"propertyType\":\"object\"}]", body.get("eventProperties").toString());
