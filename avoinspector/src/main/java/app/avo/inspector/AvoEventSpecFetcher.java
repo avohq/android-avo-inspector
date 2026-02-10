@@ -14,6 +14,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ExecutionException;
 import android.util.Log;
 
 interface EventSpecRequestClient {
@@ -33,16 +39,16 @@ class DefaultEventSpecRequestClient implements EventSpecRequestClient {
             if (status != 200) {
                 return null;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line = reader.readLine();
-            while (line != null) {
-                response.append(line);
-                line = reader.readLine();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line = reader.readLine();
+                while (line != null) {
+                    response.append(line);
+                    line = reader.readLine();
+                }
+                JSONObject json = new JSONObject(response.toString());
+                return parseResponse(json);
             }
-            reader.close();
-            JSONObject json = new JSONObject(response.toString());
-            return parseResponse(json);
         } catch (JSONException e) {
             return null;
         } finally {
@@ -173,21 +179,31 @@ interface EventSpecFetchCallback {
 public class AvoEventSpecFetcher {
     private final String baseUrl;
     private final int timeout;
+    private final int wallTimeout;
     private final Map<String, List<EventSpecFetchCallback>> inFlightCallbacks = new HashMap<>();
     private final String env;
     private final EventSpecRequestClient requestClient;
 
     public AvoEventSpecFetcher(int timeout, String env) {
-        this(timeout, env, "https://api.avo.app", new DefaultEventSpecRequestClient());
+        this(timeout, timeout * 2, env, "https://api.avo.app", new DefaultEventSpecRequestClient());
+    }
+
+    public AvoEventSpecFetcher(int timeout, int wallTimeout, String env) {
+        this(timeout, wallTimeout, env, "https://api.avo.app", new DefaultEventSpecRequestClient());
     }
 
     public AvoEventSpecFetcher(int timeout, String env, String baseUrl) {
-        this(timeout, env, baseUrl, new DefaultEventSpecRequestClient());
+        this(timeout, timeout * 2, env, baseUrl, new DefaultEventSpecRequestClient());
     }
 
     public AvoEventSpecFetcher(int timeout, String env, String baseUrl, EventSpecRequestClient requestClient) {
+        this(timeout, timeout * 2, env, baseUrl, requestClient);
+    }
+
+    public AvoEventSpecFetcher(int timeout, int wallTimeout, String env, String baseUrl, EventSpecRequestClient requestClient) {
         this.baseUrl = baseUrl;
         this.timeout = timeout;
+        this.wallTimeout = wallTimeout;
         this.env = env;
         this.requestClient = requestClient;
     }
@@ -218,12 +234,25 @@ public class AvoEventSpecFetcher {
         }
         new Thread(() -> {
             EventSpecResponse result = null;
+            ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
             try {
                 String url = buildUrl(params);
                 if (AvoInspector.isLogging()) {
                     Log.d("Avo Inspector", "Fetching event spec for event: " + params.eventName + " url: " + url);
                 }
-                EventSpecResponseWire wireResponse = makeRequest(url);
+                Future<EventSpecResponseWire> future = httpExecutor.submit(() -> makeRequest(url));
+                EventSpecResponseWire wireResponse;
+                try {
+                    wireResponse = future.get(wallTimeout, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    future.cancel(true);
+                    if (AvoInspector.isLogging()) {
+                        Log.e("Avo Inspector", "Event spec fetch timed out (wall-clock " + wallTimeout + "ms) for: " + params.eventName);
+                    }
+                    wireResponse = null;
+                } catch (ExecutionException e) {
+                    throw e.getCause() != null ? e.getCause() : e;
+                }
                 if (wireResponse == null) {
                     if (AvoInspector.isLogging()) {
                         Log.e("Avo Inspector", "Failed to fetch event spec for: " + params.eventName);
@@ -239,10 +268,12 @@ public class AvoEventSpecFetcher {
                                 + " with " + (result.events != null ? result.events.size() : 0) + " events");
                     }
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (AvoInspector.isLogging()) {
                     Log.e("Avo Inspector", "Error fetching event spec for: " + params.eventName + " " + e);
                 }
+            } finally {
+                httpExecutor.shutdownNow();
             }
             deliverResult(requestKey, result);
         }).start();

@@ -21,6 +21,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -131,6 +136,8 @@ class AvoNetworkCallsHandler {
         return eventSchemaBody;
     }
 
+    private static final int NETWORK_WALL_TIMEOUT_MS = 10_000;
+
     void reportValidatedEvent(final Map<String, Object> eventData) {
         if (AvoInspector.isLogging()) {
             Object eventName = eventData.get("eventName");
@@ -143,42 +150,58 @@ class AvoNetworkCallsHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
                 try {
-                    URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
+                    Future<?> future = httpExecutor.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            HttpsURLConnection connection = null;
+                            try {
+                                URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
+                                connection = (HttpsURLConnection) apiUrl.openConnection();
 
-                    HttpsURLConnection connection = null;
-                    try {
-                        connection = (HttpsURLConnection) apiUrl.openConnection();
+                                connection.setRequestMethod("POST");
+                                connection.setConnectTimeout(5000);
+                                connection.setReadTimeout(5000);
+                                connection.setDoInput(true);
+                                connection.setDoOutput(true);
 
-                        connection.setRequestMethod("POST");
-                        connection.setConnectTimeout(5000);
-                        connection.setReadTimeout(5000);
-                        connection.setDoInput(true);
-                        connection.setDoOutput(true);
+                                writeTrackingCallHeader(connection);
 
-                        writeTrackingCallHeader(connection);
+                                List<Map<String, Object>> data = new ArrayList<>();
+                                data.add(eventData);
+                                writeTrackingCallBody(data, connection);
 
-                        List<Map<String, Object>> data = new ArrayList<>();
-                        data.add(eventData);
-                        writeTrackingCallBody(data, connection);
+                                connection.connect();
 
-                        connection.connect();
-
-                        int responseCode = connection.getResponseCode();
-                        if (responseCode != HttpsURLConnection.HTTP_OK && AvoInspector.isLogging()) {
-                            Log.w("Avo Inspector", "Validated event report returned status: " + responseCode);
+                                int responseCode = connection.getResponseCode();
+                                if (responseCode != HttpsURLConnection.HTTP_OK && AvoInspector.isLogging()) {
+                                    Log.w("Avo Inspector", "Validated event report returned status: " + responseCode);
+                                }
+                            } catch (IOException e) {
+                                if (AvoInspector.isLogging()) {
+                                    Log.e("AvoInspector", "Failed to send validated event");
+                                }
+                            } catch (Exception e) {
+                                Util.handleException(e, envName);
+                            } finally {
+                                if (connection != null) {
+                                    connection.disconnect();
+                                }
+                            }
                         }
-                    } finally {
-                        if (connection != null) {
-                            connection.disconnect();
-                        }
+                    });
+                    future.get(NETWORK_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    if (AvoInspector.isLogging()) {
+                        Log.e("Avo Inspector", "Validated event report timed out (wall-clock " + NETWORK_WALL_TIMEOUT_MS + "ms)");
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     if (AvoInspector.isLogging()) {
                         Log.e("AvoInspector", "Failed to send validated event");
                     }
-                } catch (Exception e) {
-                    Util.handleException(e, envName);
+                } finally {
+                    httpExecutor.shutdownNow();
                 }
             }
         }).start();
@@ -240,74 +263,98 @@ class AvoNetworkCallsHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
                 try {
-                    URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
-
-                    HttpsURLConnection connection = null;
-                    try {
-                        connection = (HttpsURLConnection) apiUrl.openConnection();
-
-                        connection.setRequestMethod("POST");
-                        connection.setDoInput(true);
-                        connection.setDoOutput(true);
-
-                        writeTrackingCallHeader(connection);
-                        writeTrackingCallBody(data, connection);
-
-                        connection.connect();
-
-                        final int responseCode = connection.getResponseCode();
-                        if (responseCode != HttpsURLConnection.HTTP_OK) {
-                            callbackHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    completionHandler.call(true);
-                                }
-                            });
-                        } else {
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                            //noinspection TryFinallyCanBeTryWithResources
+                    Future<?> future = httpExecutor.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            HttpsURLConnection connection = null;
                             try {
-                                StringBuilder response = new StringBuilder();
-                                String inputLine = reader.readLine();
-                                while (inputLine != null) {
-                                    response.append(inputLine);
-                                    inputLine = reader.readLine();
-                                }
-                                JSONObject json;
-                                try {
-                                    json = new JSONObject(response.toString());
-                                } catch (JSONException e) {
-                                    json = new JSONObject();
-                                }
+                                URL apiUrl = new URL("https://api.avo.app/inspector/v1/track");
+                                connection = (HttpsURLConnection) apiUrl.openConnection();
 
-                                final JSONObject finalJson = json;
-                                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                connection.setRequestMethod("POST");
+                                connection.setDoInput(true);
+                                connection.setDoOutput(true);
+
+                                writeTrackingCallHeader(connection);
+                                writeTrackingCallBody(data, connection);
+
+                                connection.connect();
+
+                                final int responseCode = connection.getResponseCode();
+                                if (responseCode != HttpsURLConnection.HTTP_OK) {
+                                    callbackHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            completionHandler.call(true);
+                                        }
+                                    });
+                                } else {
+                                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                                    //noinspection TryFinallyCanBeTryWithResources
+                                    try {
+                                        StringBuilder response = new StringBuilder();
+                                        String inputLine = reader.readLine();
+                                        while (inputLine != null) {
+                                            response.append(inputLine);
+                                            inputLine = reader.readLine();
+                                        }
+                                        JSONObject json;
+                                        try {
+                                            json = new JSONObject(response.toString());
+                                        } catch (JSONException e) {
+                                            json = new JSONObject();
+                                        }
+
+                                        final JSONObject finalJson = json;
+                                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    samplingRate = finalJson.getDouble("samplingRate");
+                                                } catch (JSONException ignored) {}
+                                            }
+                                        });
+                                    } finally {
+                                        reader.close();
+                                    }
+                                    callbackHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            completionHandler.call(false);
+                                        }
+                                    });
+                                }
+                            } catch (IOException e) {
+                                if (AvoInspector.isLogging()) {
+                                    Log.e("AvoInspector", "Failed to perform network call, will retry later");
+                                }
+                                callbackHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        try {
-                                            samplingRate = finalJson.getDouble("samplingRate");
-                                        } catch (JSONException ignored) {}
+                                        completionHandler.call(true);
+                                    }
+                                });
+                            } catch (final Exception e) {
+                                Util.handleException(e, envName);
+                                callbackHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        completionHandler.call(false);
                                     }
                                 });
                             } finally {
-                                reader.close();
-                            }
-                            callbackHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    completionHandler.call(false);
+                                if (connection != null) {
+                                    connection.disconnect();
                                 }
-                            });
+                            }
                         }
-                    } finally {
-                        if (connection != null) {
-                            connection.disconnect();
-                        }
-                    }
-                } catch (IOException e) {
+                    });
+                    future.get(NETWORK_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
                     if (AvoInspector.isLogging()) {
-                        Log.e("AvoInspector", "Failed to perform network call, will retry later");
+                        Log.e("Avo Inspector", "Batch report timed out (wall-clock " + NETWORK_WALL_TIMEOUT_MS + "ms), will retry later");
                     }
                     callbackHandler.post(new Runnable() {
                         @Override
@@ -315,7 +362,7 @@ class AvoNetworkCallsHandler {
                             completionHandler.call(true);
                         }
                     });
-                } catch (final Exception e) {
+                } catch (Exception e) {
                     Util.handleException(e, envName);
                     callbackHandler.post(new Runnable() {
                         @Override
@@ -323,6 +370,8 @@ class AvoNetworkCallsHandler {
                             completionHandler.call(false);
                         }
                     });
+                } finally {
+                    httpExecutor.shutdownNow();
                 }
             }
         }).start();

@@ -1,5 +1,7 @@
 package app.avo.inspector;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1085,5 +1087,160 @@ public class EventValidatorTests {
         assertNull(pvr.failedEventIds);
         assertNull(pvr.passedEventIds);
         assertNull(pvr.children);
+    }
+
+    // =========================================================================
+    // EDGE CASES: convertValueToString
+    // =========================================================================
+
+    @Test
+    public void convertValueToStringWithArrayDoesNotCrash() {
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        PropertyConstraints c = createConstraints();
+        c.pinnedValues = singleMapping("[1,2,3]", "evt_1");
+        props.put("data", c);
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("data", new int[]{1, 2, 3});
+
+        // Should not throw, regardless of whether it matches the pinned value
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        assertNotNull(result);
+        assertNotNull(result.propertyResults.get("data"));
+    }
+
+    @Test
+    public void convertValueToStringWithCustomObject() {
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        PropertyConstraints c = createConstraints();
+        c.pinnedValues = singleMapping("CustomValue", "evt_1");
+        props.put("data", c);
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("data", new Object() {
+            @Override
+            public String toString() {
+                return "CustomValue";
+            }
+        });
+
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        PropertyValidationResult pvr = result.propertyResults.get("data");
+        // String.valueOf calls toString(), which returns "CustomValue" matching the pinned value
+        assertNull(pvr.failedEventIds);
+    }
+
+    // =========================================================================
+    // EDGE CASES: checkMinMax
+    // =========================================================================
+
+    @Test
+    public void checkMinMaxWithNaNValue() {
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        props.put("amount", createMinMaxConstraints(singleMapping("0,100", "evt_1")));
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("amount", Double.NaN);
+
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+
+        PropertyValidationResult pvr = result.propertyResults.get("amount");
+        assertNotNull(pvr.failedEventIds);
+        assertTrue(pvr.failedEventIds.contains("evt_1"));
+    }
+
+    @Test
+    public void checkMinMaxWithInvalidRangeFormat() {
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        props.put("amount", createMinMaxConstraints(singleMapping("abc,def", "evt_1")));
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("amount", 50);
+
+        // Should not crash, invalid range is skipped
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        PropertyValidationResult pvr = result.propertyResults.get("amount");
+        // No failures because the invalid range is skipped via NumberFormatException
+        assertNull(pvr.failedEventIds);
+    }
+
+    // =========================================================================
+    // EDGE CASES: checkAllowedValues
+    // =========================================================================
+
+    @Test
+    public void checkAllowedValuesWithInvalidJson() {
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        props.put("color", createAllowedValuesConstraints(singleMapping("not[json", "evt_1")));
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("color", "red");
+
+        // Should not crash, invalid JSON is skipped
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        assertNotNull(result);
+        PropertyValidationResult pvr = result.propertyResults.get("color");
+        // Invalid JSON key is skipped, so no failure
+        assertNull(pvr.failedEventIds);
+    }
+
+    // =========================================================================
+    // EDGE CASES: null events in spec
+    // =========================================================================
+
+    @Test
+    public void validateEventWithNullEventsInSpec() {
+        EventSpecResponse spec = new EventSpecResponse();
+        spec.events = null;
+        spec.metadata = createMetadata("schema_1", "branch_1");
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("any_prop", "value");
+
+        // Should not crash — needs a null guard in validateEvent
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        assertNotNull(result);
+        assertNotNull(result.propertyResults);
+    }
+
+    // =========================================================================
+    // EDGE CASES: addValidationChildren without property children
+    // =========================================================================
+
+    @Test
+    public void addValidationChildrenWithoutPropertyChildren() throws Exception {
+        // Schema has primitive property (no children)
+        Map<String, AvoEventSchemaType> schema = new HashMap<>();
+        schema.put("name", new AvoEventSchemaType.AvoString());
+
+        // Validation result has children data for this property
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.metadata = new EventSpecMetadata();
+        validationResult.propertyResults = new HashMap<>();
+        PropertyValidationResult propResult = new PropertyValidationResult();
+        propResult.children = new HashMap<>();
+        PropertyValidationResult childResult = new PropertyValidationResult();
+        childResult.failedEventIds = Arrays.asList("event1");
+        propResult.children.put("subfield", childResult);
+        validationResult.propertyResults.put("name", propResult);
+
+        // remapPropertiesWithValidation should not crash
+        JSONArray result = Util.remapPropertiesWithValidation(schema, validationResult);
+        assertNotNull(result);
+        assertEquals(1, result.length());
+        JSONObject prop = result.getJSONObject(0);
+        assertEquals("name", prop.optString("propertyName"));
+        // Property should NOT have children since the schema property is a primitive
+        assertFalse(prop.has("children"));
     }
 }

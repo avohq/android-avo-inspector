@@ -546,6 +546,70 @@ public class EventSpecIntegrationTests {
     }
 
     // =========================================================================
+    // Task 1a: bodyForValidatedEventSchemaCall edge cases
+    // =========================================================================
+
+    @Test
+    public void bodyForValidatedEventSchemaCallWithNullValidationResult() {
+        AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
+                "testApiKey", "dev", "testApp", "1.0.0", "7");
+
+        Map<String, AvoEventSchemaType> schema = new HashMap<>();
+        schema.put("name", new AvoEventSchemaType.AvoString());
+
+        Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
+                "TestEvent", schema, null, null, null, "stream123");
+
+        assertNotNull(body);
+        assertFalse(body.containsKey("eventSpecMetadata"));
+        assertEquals("TestEvent", body.get("eventName"));
+    }
+
+    @Test
+    public void bodyForValidatedEventSchemaCallWithNullMetadata() {
+        AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
+                "testApiKey", "dev", "testApp", "1.0.0", "7");
+
+        Map<String, AvoEventSchemaType> schema = new HashMap<>();
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.metadata = null;
+        validationResult.propertyResults = new HashMap<>();
+
+        Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
+                "TestEvent", schema, null, null, validationResult, "stream123");
+
+        assertNotNull(body);
+        assertFalse(body.containsKey("eventSpecMetadata"));
+    }
+
+    @Test
+    public void bodyForValidatedEventSchemaCallWithPartialMetadata() {
+        AvoNetworkCallsHandler sut = new AvoNetworkCallsHandler(
+                "testApiKey", "dev", "testApp", "1.0.0", "7");
+
+        Map<String, AvoEventSchemaType> schema = new HashMap<>();
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.metadata = new EventSpecMetadata();
+        validationResult.metadata.schemaId = "schema1";
+        validationResult.metadata.branchId = null;
+        validationResult.metadata.latestActionId = null;
+        validationResult.metadata.sourceId = null;
+        validationResult.propertyResults = new HashMap<>();
+
+        Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
+                "TestEvent", schema, null, null, validationResult, "stream123");
+
+        assertTrue(body.containsKey("eventSpecMetadata"));
+        JSONObject metadata = (JSONObject) body.get("eventSpecMetadata");
+        assertEquals("schema1", metadata.optString("schemaId"));
+        assertFalse(metadata.has("branchId"));
+        assertFalse(metadata.has("latestActionId"));
+        assertFalse(metadata.has("sourceId"));
+    }
+
+    // =========================================================================
     // Helper methods
     // =========================================================================
 

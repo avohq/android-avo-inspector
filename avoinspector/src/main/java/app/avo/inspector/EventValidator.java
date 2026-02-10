@@ -69,10 +69,13 @@ class EventValidator {
      */
     public static ValidationResult validateEvent(Map<String, ?> properties,
                                                  EventSpecResponse specResponse) {
-        List<String> allEventIds = collectAllEventIds(specResponse.events);
+        List<EventSpecEntry> events = specResponse.events != null
+                ? specResponse.events : Collections.<EventSpecEntry>emptyList();
+
+        List<String> allEventIds = collectAllEventIds(events);
 
         Map<String, PropertyConstraints> constraintsByProperty =
-                collectConstraintsByPropertyName(specResponse.events);
+                collectConstraintsByPropertyName(events);
 
         Map<String, PropertyValidationResult> propertyResults = new HashMap<>();
 

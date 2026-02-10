@@ -46,6 +46,10 @@ public class AvoInspector implements Inspector {
 
     @Nullable String publicEncryptionKey;
 
+    // Total wall-clock timeout including DNS resolution. Bounds the entire fetch
+    // so that unresolvable hosts fail in ~10s instead of the platform default (~90s).
+    private static final int EVENT_SPEC_FETCH_WALL_TIMEOUT_MS = 10_000;
+
     @Nullable EventSpecCache eventSpecCache;
     @Nullable AvoEventSpecFetcher eventSpecFetcher;
     @Nullable volatile String currentBranchId;
@@ -127,7 +131,7 @@ public class AvoInspector implements Inspector {
         String streamId = AvoAnonymousId.anonymousId();
         if (streamId != null && !streamId.isEmpty() && !"unknown".equals(streamId)) {
             this.eventSpecCache = new EventSpecCache();
-            this.eventSpecFetcher = new AvoEventSpecFetcher(EVENT_SPEC_FETCH_TIMEOUT_MS, env.getName());
+            this.eventSpecFetcher = new AvoEventSpecFetcher(EVENT_SPEC_FETCH_TIMEOUT_MS, EVENT_SPEC_FETCH_WALL_TIMEOUT_MS, env.getName());
         }
 
         if (env == AvoInspectorEnv.Dev) {
