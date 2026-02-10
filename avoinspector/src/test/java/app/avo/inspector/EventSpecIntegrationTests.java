@@ -558,7 +558,7 @@ public class EventSpecIntegrationTests {
         schema.put("name", new AvoEventSchemaType.AvoString());
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, null, "stream123");
+                "TestEvent", schema, null, null, null, "stream123", null);
 
         assertNotNull(body);
         assertFalse(body.containsKey("eventSpecMetadata"));
@@ -577,7 +577,7 @@ public class EventSpecIntegrationTests {
         validationResult.propertyResults = new HashMap<>();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         assertNotNull(body);
         assertFalse(body.containsKey("eventSpecMetadata"));
@@ -599,7 +599,7 @@ public class EventSpecIntegrationTests {
         validationResult.propertyResults = new HashMap<>();
 
         Map<String, Object> body = sut.bodyForValidatedEventSchemaCall(
-                "TestEvent", schema, null, null, validationResult, "stream123");
+                "TestEvent", schema, null, null, validationResult, "stream123", null);
 
         assertTrue(body.containsKey("eventSpecMetadata"));
         JSONObject metadata = (JSONObject) body.get("eventSpecMetadata");
