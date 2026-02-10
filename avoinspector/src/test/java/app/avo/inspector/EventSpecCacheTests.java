@@ -8,8 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class EventSpecCacheTests {
 
@@ -17,7 +19,7 @@ public class EventSpecCacheTests {
 
     @Before
     public void setUp() {
-        cache = new EventSpecCache(false);
+        cache = new EventSpecCache();
     }
 
     // --- Helper to create a minimal EventSpecResponse ---
@@ -287,12 +289,132 @@ public class EventSpecCacheTests {
 
     @Test
     public void clearWithLoggingEnabled() {
-        EventSpecCache loggingCache = new EventSpecCache(true);
+        EventSpecCache loggingCache = new EventSpecCache();
         loggingCache.set("apiKey", "stream1", "Event1", createTestSpec("s1", "b1"));
 
         // Should not throw even with logging enabled (Log returns defaults in unit tests)
         loggingCache.clear();
         assertEquals(0, loggingCache.size());
+    }
+
+    // =========================================================================
+    // CONTAINS + NULL SPEC CACHING TESTS
+    // =========================================================================
+
+    // --- Test: contains returns false for missing entry ---
+
+    @Test
+    public void containsReturnsFalseForMissingEntry() {
+        assertFalse(cache.contains("apiKey", "stream1", "nonExistent"));
+    }
+
+    // --- Test: contains returns true for entry with non-null spec ---
+
+    @Test
+    public void containsReturnsTrueForNonNullSpec() {
+        cache.set("apiKey", "stream1", "TestEvent", createTestSpec("s1", "b1"));
+        assertTrue(cache.contains("apiKey", "stream1", "TestEvent"));
+    }
+
+    // --- Test: contains returns true for entry with null spec (cached empty response) ---
+
+    @Test
+    public void containsReturnsTrueForNullSpec() {
+        cache.set("apiKey", "stream1", "UnknownEvent", null);
+        assertTrue(cache.contains("apiKey", "stream1", "UnknownEvent"));
+    }
+
+    // --- Test: get returns null for cached null spec (distinct from cache miss) ---
+
+    @Test
+    public void getNullForCachedNullSpec() {
+        cache.set("apiKey", "stream1", "UnknownEvent", null);
+
+        // contains distinguishes from cache miss
+        assertTrue(cache.contains("apiKey", "stream1", "UnknownEvent"));
+        // get still returns null (the stored value)
+        assertNull(cache.get("apiKey", "stream1", "UnknownEvent"));
+    }
+
+    // --- Test: null spec entry counts toward cache size ---
+
+    @Test
+    public void nullSpecEntryCountsTowardSize() {
+        cache.set("apiKey", "stream1", "Event1", createTestSpec("s1", "b1"));
+        cache.set("apiKey", "stream1", "Event2", null);
+        assertEquals(2, cache.size());
+    }
+
+    // --- Test: null spec entry expires via TTL ---
+
+    @Test
+    public void nullSpecEntryExpiresViaTtl() throws Exception {
+        cache.set("apiKey", "stream1", "UnknownEvent", null);
+
+        // Use reflection to set old timestamp
+        java.lang.reflect.Field cacheField = EventSpecCache.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        HashMap<String, EventSpecCacheEntry> internalCache =
+                (HashMap<String, EventSpecCacheEntry>) cacheField.get(cache);
+
+        EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:UnknownEvent");
+        assertNotNull(entry);
+        entry.timestamp = (double) (System.currentTimeMillis() - 61_000);
+
+        assertFalse("Expired null-spec entry should not be contained", cache.contains("apiKey", "stream1", "UnknownEvent"));
+        assertNull(cache.get("apiKey", "stream1", "UnknownEvent"));
+    }
+
+    // --- Test: contains returns false for expired non-null entry ---
+
+    @Test
+    public void containsReturnsFalseForExpiredEntry() throws Exception {
+        cache.set("apiKey", "stream1", "TestEvent", createTestSpec("s1", "b1"));
+
+        java.lang.reflect.Field cacheField = EventSpecCache.class.getDeclaredField("cache");
+        cacheField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        HashMap<String, EventSpecCacheEntry> internalCache =
+                (HashMap<String, EventSpecCacheEntry>) cacheField.get(cache);
+
+        EventSpecCacheEntry entry = internalCache.get("apiKey:stream1:TestEvent");
+        assertNotNull(entry);
+        entry.timestamp = (double) (System.currentTimeMillis() - 61_000);
+
+        assertFalse(cache.contains("apiKey", "stream1", "TestEvent"));
+    }
+
+    // --- Test: overwriting null spec with real spec works ---
+
+    @Test
+    public void overwriteNullSpecWithRealSpec() {
+        cache.set("apiKey", "stream1", "TestEvent", null);
+
+        assertTrue(cache.contains("apiKey", "stream1", "TestEvent"));
+        assertNull(cache.get("apiKey", "stream1", "TestEvent"));
+
+        // Now overwrite with a real spec
+        cache.set("apiKey", "stream1", "TestEvent", createTestSpec("s1", "b1"));
+
+        assertTrue(cache.contains("apiKey", "stream1", "TestEvent"));
+        assertNotNull(cache.get("apiKey", "stream1", "TestEvent"));
+        assertEquals("s1", cache.get("apiKey", "stream1", "TestEvent").metadata.schemaId);
+    }
+
+    // --- Test: clear removes null spec entries too ---
+
+    @Test
+    public void clearRemovesNullSpecEntries() {
+        cache.set("apiKey", "stream1", "Event1", createTestSpec("s1", "b1"));
+        cache.set("apiKey", "stream1", "Event2", null);
+        assertEquals(2, cache.size());
+
+        cache.clear();
+
+        assertEquals(0, cache.size());
+        assertFalse(cache.contains("apiKey", "stream1", "Event1"));
+        assertFalse(cache.contains("apiKey", "stream1", "Event2"));
     }
 
     // --- Test: globalEventCount resets after eviction ---

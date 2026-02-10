@@ -15,11 +15,8 @@ class EventSpecCache {
 
     private int globalEventCount = 0;
 
-    private final boolean shouldLog;
-
-    EventSpecCache(boolean shouldLog) {
+    EventSpecCache() {
         this.cache = new HashMap<>();
-        this.shouldLog = shouldLog;
     }
 
     private String generateKey(String apiKey, String streamId, String eventName) {
@@ -39,7 +36,7 @@ class EventSpecCache {
             return null;
         }
 
-        if (shouldLog) {
+        if (AvoInspector.isLogging()) {
             Log.d("Avo Inspector", "Cache hit for key: " + key);
         }
 
@@ -73,9 +70,22 @@ class EventSpecCache {
     synchronized void clear() {
         cache.clear();
         globalEventCount = 0;
-        if (shouldLog) {
+        if (AvoInspector.isLogging()) {
             Log.d("Avo Inspector", "Cache cleared");
         }
+    }
+
+    synchronized boolean contains(String apiKey, String streamId, String eventName) {
+        String key = generateKey(apiKey, streamId, eventName);
+        EventSpecCacheEntry entry = cache.get(key);
+        if (entry == null) {
+            return false;
+        }
+        if (shouldEvict(entry)) {
+            cache.remove(key);
+            return false;
+        }
+        return true;
     }
 
     synchronized int size() {

@@ -174,22 +174,20 @@ public class AvoEventSpecFetcher {
     private final String baseUrl;
     private final int timeout;
     private final Map<String, List<EventSpecFetchCallback>> inFlightCallbacks = new HashMap<>();
-    private final boolean shouldLog;
     private final String env;
     private final EventSpecRequestClient requestClient;
 
-    public AvoEventSpecFetcher(int timeout, boolean shouldLog, String env) {
-        this(timeout, shouldLog, env, "https://api.avo.app", new DefaultEventSpecRequestClient());
+    public AvoEventSpecFetcher(int timeout, String env) {
+        this(timeout, env, "https://api.avo.app", new DefaultEventSpecRequestClient());
     }
 
-    public AvoEventSpecFetcher(int timeout, boolean shouldLog, String env, String baseUrl) {
-        this(timeout, shouldLog, env, baseUrl, new DefaultEventSpecRequestClient());
+    public AvoEventSpecFetcher(int timeout, String env, String baseUrl) {
+        this(timeout, env, baseUrl, new DefaultEventSpecRequestClient());
     }
 
-    public AvoEventSpecFetcher(int timeout, boolean shouldLog, String env, String baseUrl, EventSpecRequestClient requestClient) {
+    public AvoEventSpecFetcher(int timeout, String env, String baseUrl, EventSpecRequestClient requestClient) {
         this.baseUrl = baseUrl;
         this.timeout = timeout;
-        this.shouldLog = shouldLog;
         this.env = env;
         this.requestClient = requestClient;
     }
@@ -222,20 +220,27 @@ public class AvoEventSpecFetcher {
             EventSpecResponse result = null;
             try {
                 String url = buildUrl(params);
+                if (AvoInspector.isLogging()) {
+                    Log.d("Avo Inspector", "Fetching event spec for event: " + params.eventName + " url: " + url);
+                }
                 EventSpecResponseWire wireResponse = makeRequest(url);
                 if (wireResponse == null) {
-                    if (shouldLog) {
+                    if (AvoInspector.isLogging()) {
                         Log.e("Avo Inspector", "Failed to fetch event spec for: " + params.eventName);
                     }
                 } else if (!hasExpectedShape(wireResponse)) {
-                    if (shouldLog) {
+                    if (AvoInspector.isLogging()) {
                         Log.e("Avo Inspector", "Invalid event spec response for: " + params.eventName);
                     }
                 } else {
                     result = parseEventSpecResponse(wireResponse);
+                    if (AvoInspector.isLogging()) {
+                        Log.d("Avo Inspector", "Successfully fetched event spec for: " + params.eventName
+                                + " with " + (result.events != null ? result.events.size() : 0) + " events");
+                    }
                 }
             } catch (Exception e) {
-                if (shouldLog) {
+                if (AvoInspector.isLogging()) {
                     Log.e("Avo Inspector", "Error fetching event spec for: " + params.eventName + " " + e);
                 }
             }
