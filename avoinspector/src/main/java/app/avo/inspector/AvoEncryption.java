@@ -185,15 +185,25 @@ class AvoEncryption {
     }
 
     private static byte[] hexToBytes(String hex) {
+        if (hex == null || hex.isEmpty()) {
+            throw new IllegalArgumentException("Hex string must not be null or empty");
+        }
         // Remove 0x prefix if present
         if (hex.startsWith("0x") || hex.startsWith("0X")) {
             hex = hex.substring(2);
         }
+        if (hex.length() % 2 != 0) {
+            throw new IllegalArgumentException("Hex string must have even length, got " + hex.length());
+        }
         int len = hex.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                    + Character.digit(hex.charAt(i + 1), 16));
+            int high = Character.digit(hex.charAt(i), 16);
+            int low = Character.digit(hex.charAt(i + 1), 16);
+            if (high == -1 || low == -1) {
+                throw new IllegalArgumentException("Invalid hex character at index " + i + ": " + hex.substring(i, i + 2));
+            }
+            data[i / 2] = (byte) ((high << 4) + low);
         }
         return data;
     }

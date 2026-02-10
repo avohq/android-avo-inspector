@@ -38,6 +38,7 @@ public class EncryptionIntegrationTests {
     @Mock SharedPreferences.Editor mockEditor;
 
     private AvoStorage prevAvoStorage;
+    private AvoEncryption.Base64Encoder prevBase64Encoder;
     private String testPublicKeyHex;
 
     @Before
@@ -45,6 +46,7 @@ public class EncryptionIntegrationTests {
         MockitoAnnotations.initMocks(this);
 
         // Swap base64Encoder for unit tests
+        prevBase64Encoder = AvoEncryption.base64Encoder;
         AvoEncryption.base64Encoder = new AvoEncryption.Base64Encoder() {
             @Override
             public String encode(byte[] data) {
@@ -91,6 +93,7 @@ public class EncryptionIntegrationTests {
     @After
     public void tearDown() {
         AvoInspector.avoStorage = prevAvoStorage;
+        AvoEncryption.base64Encoder = prevBase64Encoder;
         AvoAnonymousId.clearCache();
         AvoDeduplicator.clearEvents();
     }

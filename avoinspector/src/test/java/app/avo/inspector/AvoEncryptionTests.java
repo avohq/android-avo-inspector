@@ -1,5 +1,6 @@
 package app.avo.inspector;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,10 +27,12 @@ public class AvoEncryptionTests {
 
     private KeyPair recipientKeyPair;
     private String recipientPublicKeyHex;
+    private AvoEncryption.Base64Encoder originalBase64Encoder;
 
     @Before
     public void setUp() throws Exception {
         // Swap base64Encoder to java.util.Base64 for unit tests (android.util.Base64 is not available)
+        originalBase64Encoder = AvoEncryption.base64Encoder;
         AvoEncryption.base64Encoder = new AvoEncryption.Base64Encoder() {
             @Override
             public String encode(byte[] data) {
@@ -51,6 +54,11 @@ public class AvoEncryptionTests {
         for (byte b : x) hex.append(String.format("%02x", b));
         for (byte b : y) hex.append(String.format("%02x", b));
         recipientPublicKeyHex = hex.toString();
+    }
+
+    @After
+    public void tearDown() {
+        AvoEncryption.base64Encoder = originalBase64Encoder;
     }
 
     @Test

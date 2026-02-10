@@ -123,7 +123,7 @@ public class AvoInspector implements Inspector {
                 apiKey, env.getName(), appName, appVersionString, libVersion + "", publicEncryptionKey);
         avoBatcher = new AvoBatcher(application, networkCallsHandler);
 
-        if (publicEncryptionKey != null && !publicEncryptionKey.isEmpty()) {
+        if (publicEncryptionKey != null && !publicEncryptionKey.isEmpty() && isLogging()) {
             Log.d("Avo Inspector", "Property value encryption enabled");
         }
 
