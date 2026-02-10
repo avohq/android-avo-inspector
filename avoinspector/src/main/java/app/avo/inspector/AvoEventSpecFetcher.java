@@ -39,16 +39,16 @@ class DefaultEventSpecRequestClient implements EventSpecRequestClient {
             if (status != 200) {
                 return null;
             }
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuilder response = new StringBuilder();
-            String line = reader.readLine();
-            while (line != null) {
-                response.append(line);
-                line = reader.readLine();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line = reader.readLine();
+                while (line != null) {
+                    response.append(line);
+                    line = reader.readLine();
+                }
+                JSONObject json = new JSONObject(response.toString());
+                return parseResponse(json);
             }
-            reader.close();
-            JSONObject json = new JSONObject(response.toString());
-            return parseResponse(json);
         } catch (JSONException e) {
             return null;
         } finally {

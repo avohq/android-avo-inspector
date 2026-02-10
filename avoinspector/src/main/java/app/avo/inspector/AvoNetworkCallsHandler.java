@@ -117,7 +117,7 @@ class AvoNetworkCallsHandler {
         return eventSchemaBody;
     }
 
-    private static final int VALIDATED_EVENT_WALL_TIMEOUT_MS = 10_000;
+    private static final int NETWORK_WALL_TIMEOUT_MS = 10_000;
 
     void reportValidatedEvent(final Map<String, Object> eventData) {
         if (AvoInspector.isLogging()) {
@@ -172,10 +172,10 @@ class AvoNetworkCallsHandler {
                             }
                         }
                     });
-                    future.get(VALIDATED_EVENT_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                    future.get(NETWORK_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
                     if (AvoInspector.isLogging()) {
-                        Log.e("Avo Inspector", "Validated event report timed out (wall-clock " + VALIDATED_EVENT_WALL_TIMEOUT_MS + "ms)");
+                        Log.e("Avo Inspector", "Validated event report timed out (wall-clock " + NETWORK_WALL_TIMEOUT_MS + "ms)");
                     }
                 } catch (Exception e) {
                     if (AvoInspector.isLogging()) {
@@ -323,10 +323,10 @@ class AvoNetworkCallsHandler {
                             }
                         }
                     });
-                    future.get(VALIDATED_EVENT_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+                    future.get(NETWORK_WALL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
                     if (AvoInspector.isLogging()) {
-                        Log.e("Avo Inspector", "Batch report timed out (wall-clock " + VALIDATED_EVENT_WALL_TIMEOUT_MS + "ms), will retry later");
+                        Log.e("Avo Inspector", "Batch report timed out (wall-clock " + NETWORK_WALL_TIMEOUT_MS + "ms), will retry later");
                     }
                     callbackHandler.post(new Runnable() {
                         @Override
