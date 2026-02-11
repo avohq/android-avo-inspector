@@ -71,8 +71,8 @@ dependencies {
         releaseImplementation "com.github.avohq.android-avo-inspector:inspector:${ref}"
     } else {
         // Maven Central (default) - for released versions
-        debugImplementation 'app.avo:inspector-dev:2.3.0'
-        releaseImplementation 'app.avo:inspector:2.3.0'
+        debugImplementation 'app.avo:inspector-dev:2.4.0'
+        releaseImplementation 'app.avo:inspector:2.4.0'
     }
 
     testImplementation 'org.json:json:20240303'
