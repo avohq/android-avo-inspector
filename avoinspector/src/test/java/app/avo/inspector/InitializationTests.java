@@ -57,12 +57,12 @@ public class InitializationTests {
         assertEquals("10", sut.appVersionString);
         assertEquals("apiKey", sut.apiKey);
         assertEquals("testPckg", sut.appName);
-        assertEquals(7, sut.libVersion);
+        assertEquals(8, sut.libVersion);
 
         assertEquals("10", sut.avoBatcher.networkCallsHandler.appVersion);
         assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
         assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
-        assertEquals("7", sut.avoBatcher.networkCallsHandler.libVersion);
+        assertEquals("8", sut.avoBatcher.networkCallsHandler.libVersion);
     }
 
     @Test
@@ -88,12 +88,12 @@ public class InitializationTests {
             assertEquals(expectedVersionName, sut.appVersionString);
             assertEquals("apiKey", sut.apiKey);
             assertEquals("testPckg", sut.appName);
-            assertEquals(7, sut.libVersion);
+            assertEquals(8, sut.libVersion);
 
             assertEquals(expectedVersionName, sut.avoBatcher.networkCallsHandler.appVersion);
             assertEquals("apiKey", sut.avoBatcher.networkCallsHandler.apiKey);
             assertEquals("testPckg", sut.avoBatcher.networkCallsHandler.appName);
-            assertEquals("7", sut.avoBatcher.networkCallsHandler.libVersion);
+            assertEquals("8", sut.avoBatcher.networkCallsHandler.libVersion);
         }
     }
 
