@@ -1,3 +1,14 @@
+## 2.4.0
+
+- Add ECIES property value encryption for dev/staging environments
+- Add event spec fetching and validation against tracking plan constraints
+- Support compressed EC public keys (02/03 prefix decompression)
+- Add wall-clock timeout to bound DNS resolution hangs
+- Fix BufferedReader leak with try-with-resources
+- Improve thread safety with dedicated lock for currentBranchId
+- Cache empty responses to prevent unnecessary re-fetching
+- Add comprehensive test coverage for event spec integration and encryption
+
 ## 2.0.4
 
 Stability improvements
