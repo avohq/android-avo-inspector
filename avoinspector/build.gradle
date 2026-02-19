@@ -90,6 +90,7 @@ def analyticsDebuggerDep = isJitPackBuild
 
 dependencies {
     implementation 'androidx.annotation:annotation-jvm:1.8.2'
+    implementation 'com.google.re2j:re2j:1.7'
     developmentApi analyticsDebuggerDep
 
     testImplementation 'junit:junit:4.13.2'
