@@ -1250,7 +1250,7 @@ public class EventValidatorTests {
     // REDOS SAFETY TESTS
     // =========================================================================
 
-    @Test
+    @Test(timeout = 1000)
     public void redosPatternCompletesQuicklyWithRe2j() {
         // (a+)+$ is a classic ReDoS pattern that causes catastrophic backtracking
         // in java.util.regex but is safe with RE2
@@ -1270,13 +1270,13 @@ public class EventValidatorTests {
         Map<String, Object> properties = new HashMap<>();
         properties.put("field", evilInput);
 
-        long start = System.currentTimeMillis();
+        long startNanos = System.nanoTime();
         ValidationResult result = EventValidator.validateEvent(properties, spec);
-        long elapsed = System.currentTimeMillis() - start;
+        long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000;
 
         assertNotNull(result);
         // RE2 should complete in well under 1 second; java.util.regex would hang
-        assertTrue("ReDoS pattern took " + elapsed + "ms, expected < 1000ms", elapsed < 1000);
+        assertTrue("ReDoS pattern took " + elapsedMillis + "ms, expected < 1000ms", elapsedMillis < 1000);
     }
 
     @Test
