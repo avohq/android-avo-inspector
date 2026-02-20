@@ -7,6 +7,8 @@ import org.junit.Test;
 
 import java.util.*;
 
+import com.google.re2j.PatternSyntaxException;
+
 import static org.junit.Assert.*;
 
 public class EventValidatorTests {
@@ -1242,5 +1244,60 @@ public class EventValidatorTests {
         assertEquals("name", prop.optString("propertyName"));
         // Property should NOT have children since the schema property is a primitive
         assertFalse(prop.has("children"));
+    }
+
+    // =========================================================================
+    // REDOS SAFETY TESTS
+    // =========================================================================
+
+    @Test(timeout = 1000)
+    public void redosPatternCompletesQuicklyWithRe2j() {
+        // (a+)+$ is a classic ReDoS pattern that causes catastrophic backtracking
+        // in java.util.regex but is safe with RE2
+        String redosPattern = "(a+)+$";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 20000; i++) {
+            sb.append('a');
+        }
+        sb.append('!');
+        String evilInput = sb.toString();
+
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        props.put("field", createRegexConstraints(singleMapping(redosPattern, "evt_1")));
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("field", evilInput);
+
+        long startNanos = System.nanoTime();
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000;
+
+        assertNotNull(result);
+        // RE2 should complete in well under 1 second; java.util.regex would hang
+        assertTrue("ReDoS pattern took " + elapsedMillis + "ms, expected < 1000ms", elapsedMillis < 1000);
+    }
+
+    @Test
+    public void unsupportedLookaheadPatternHandledGracefully() {
+        // RE2 does not support lookaheads; this should be caught as PatternSyntaxException
+        // and handled gracefully (no crash, no failure for that constraint)
+        String lookaheadPattern = "(?=.*[A-Z]).*";
+
+        Map<String, PropertyConstraints> props = new HashMap<>();
+        props.put("field", createRegexConstraints(singleMapping(lookaheadPattern, "evt_1")));
+        EventSpecEntry entry = createEntry("evt_1", Collections.emptyList(), props);
+        EventSpecResponse spec = createSpec(Collections.singletonList(entry));
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("field", "Hello");
+
+        // Should not throw — the PatternSyntaxException is caught in checkRegexPatterns
+        ValidationResult result = EventValidator.validateEvent(properties, spec);
+        assertNotNull(result);
+        // The invalid pattern is skipped, so no eventIds are failed by it
+        PropertyValidationResult pvr = result.propertyResults.get("field");
+        assertNull(pvr.failedEventIds);
     }
 }
